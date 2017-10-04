@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>950</width>
-    <height>726</height>
+    <width>1156</width>
+    <height>673</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -49,40 +49,17 @@
       </property>
       <item>
        <widget class="QPushButton" name="btnControl">
-        <property name="minimumSize">
-         <size>
-          <width>250</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>250</width>
-          <height>50</height>
-         </size>
-        </property>
         <property name="styleSheet">
-         <string notr="true">QPushButton
-{
-	font: bold 18px;
-	color: white;
-	border-radius: 0px;
-	border: none;
+         <string notr="true">QPushButton {
+	font: bold 18px; color: white;
+	border-radius: 0px; border: none;
 	background-color: #224d77;
+	min-width: 250px; max-width: 250px;
+	min-height: 50px; max-height: 50px;
 }
-QPushButton:pressed
-{
-	background-color: #1c4063;
-}
-QPushButton:hover:!pressed:!checked
-{
-	background-color: #27598b;
-}
-QPushButton:checked
-{
-	color: white;
-	background-color: #2d669f;
-}</string>
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed:!checked { background-color: #27598b; }
+QPushButton:checked { color: white; background-color: #2d669f; }</string>
         </property>
         <property name="text">
          <string>   Control</string>
@@ -107,40 +84,17 @@ QPushButton:checked
       </item>
       <item>
        <widget class="QPushButton" name="btnSettings">
-        <property name="minimumSize">
-         <size>
-          <width>250</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>250</width>
-          <height>50</height>
-         </size>
-        </property>
         <property name="styleSheet">
-         <string notr="true">QPushButton
-{
-	font: bold 18px;
-	color: white;
-	border-radius: 0px;
-	border: none;
+         <string notr="true">QPushButton {
+	font: bold 18px; color: white;
+	border-radius: 0px; border: none;
 	background-color: #224d77;
+	min-width: 250px; max-width: 250px;
+	min-height: 50px; max-height: 50px;
 }
-QPushButton:pressed
-{
-	background-color: #1c4063;
-}
-QPushButton:hover:!pressed:!checked
-{
-	background-color: #27598b;
-}
-QPushButton:checked
-{
-	color: white;
-	background-color: #2d669f;
-}</string>
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed:!checked { background-color: #27598b; }
+QPushButton:checked { color: white; background-color: #2d669f; }</string>
         </property>
         <property name="text">
          <string>   Settings</string>
@@ -151,8 +105,8 @@ QPushButton:checked
         </property>
         <property name="iconSize">
          <size>
-          <width>35</width>
-          <height>35</height>
+          <width>34</width>
+          <height>34</height>
          </size>
         </property>
         <property name="checkable">
@@ -174,34 +128,16 @@ QPushButton:checked
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_6">
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>50</height>
-         </size>
-        </property>
+       <widget class="QPushButton" name="btnGimbalIcon">
         <property name="styleSheet">
-         <string notr="true">QPushButton
-{
-	border-radius: 0px;
-	border: none;
+         <string notr="true">QPushButton {
+	border-radius: 0px; border: none;
 	background-color: #113A61;
+	min-width: 150px; max-width: 150px;
+     min-height: 50px; max-height: 50px;
 }
-QPushButton:pressed
-{
-	background-color: #113A61;
-}
-QPushButton:hover:!pressed
-{
-	background-color: #113A61;
-}</string>
+QPushButton:pressed { background-color: #113A61; }
+QPushButton:hover:!pressed { background-color: #113A61; }</string>
         </property>
         <property name="text">
          <string/>
@@ -260,9 +196,9 @@ QPushButton:hover:!pressed
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-24</y>
-             <width>1131</width>
-             <height>677</height>
+             <y>0</y>
+             <width>1144</width>
+             <height>628</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
@@ -272,104 +208,43 @@ QPushButton:hover:!pressed
                <number>7</number>
               </property>
               <item>
-               <widget class="QGroupBox" name="groupBox">
+               <widget class="QGroupBox" name="grpSerialPort">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>300</width>
-                  <height>0</height>
-                 </size>
-                </property>
                 <property name="styleSheet">
-                 <string notr="true">QGroupBox {
-	font: 16px;
-}
-QGroupBox::title {
-	subcontrol-position: top center;
-}
-
-QLabel {
-	font: bold 18px;
-}
-
-QComboBox
-{
-	font: bold 18px;
-	border: 2px solid #8c8c8c;
-	border-radius: 5px;
-}
-
+                 <string notr="true">QGroupBox { font: 16px; min-width: 300px; max-width: 300px;}
+QGroupBox::title { subcontrol-position: top center; }
+QLabel { font: bold 18px; }
+QComboBox { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; min-height: 36px; }
 QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 15px;
-
-    border-left-width: 1px;
-    border-left-color: darkgray;
-    border-left-style: solid; /* just a single line */
-    border-top-right-radius: 3px; /* same radius as the QComboBox */
-    border-bottom-right-radius: 3px;
+	subcontrol-origin: padding; subcontrol-position: top right; width: 15px;
+	border-left-width: 1px; border-left-color: darkgray;
+	border-left-style: solid; border-top-right-radius: 3px; border-bottom-right-radius: 3px;
 }
-QComboBox::down-arrow
-{
-	image: url(:/files/images/arrow_down.png);
-	height: 12px;
-	width: 12px;
-}
-QComboBox::on
-{
-	border: 2px solid #B77E2A;
-}
-QComboBox:hover
-{
-	border: 2px solid #B77E2A;
-}
-QComboBox QAbstractItemView
-{
+QComboBox::down-arrow{ image: url(:/files/images/arrow_down.png); height: 12px; width: 12px; }
+QComboBox::on { border: 2px solid #B77E2A; }
+QComboBox:hover { border: 2px solid #B77E2A; }
+QComboBox QAbstractItemView {
 	border: 2px solid #B77E2A;
 	selection-background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #111, stop: 1 #333);
 }
-
-QPushButton {
-	font: bold 18px;
-	color: white;
-	background-color: #224d77;
-	border-radius: 5px;
-}
-QPushButton:pressed {
-	background-color: #1c4063;
-}
-QPushButton:hover:!pressed {
-	background-color: #27598b;
-}</string>
+QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; }
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed { background-color: #27598b; }</string>
                 </property>
                 <property name="title">
                  <string>Serial Port</string>
                 </property>
-                <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
+                <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
                  <item row="0" column="1">
-                  <widget class="QComboBox" name="comboBox">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </widget>
+                  <widget class="QComboBox" name="comboBox"/>
                  </item>
                  <item row="1" column="1">
                   <widget class="QComboBox" name="comboBox_2">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
                    <item>
                     <property name="text">
                      <string>1200</string>
@@ -437,12 +312,6 @@ QPushButton:hover:!pressed {
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
                    <property name="text">
                     <string>Connect</string>
                    </property>
@@ -452,50 +321,21 @@ QPushButton:hover:!pressed {
                </widget>
               </item>
               <item>
-               <widget class="QGroupBox" name="groupBox_2">
-                <property name="minimumSize">
-                 <size>
-                  <width>300</width>
-                  <height>0</height>
-                 </size>
-                </property>
+               <widget class="QGroupBox" name="grpModeControl">
                 <property name="styleSheet">
-                 <string notr="true">QGroupBox {
-	font: 16px;
-}
-QGroupBox::title {
-	subcontrol-position: top center;
-}
-QPushButton {
-	font: bold 18px;
-	border: 2px solid #8c8c8c;
-	border-radius: 5px;
-	background-color: white;
-}
-QPushButton:pressed {
-	background-color: #f2f2f2;
-}
-QPushButton:hover:!checked {
-	border: 2px solid #B77E2A;
-}
-QPushButton:checked {
-	color: white;
-	border: 2px solid #224d77;
-	background-color: #224d77;
-}</string>
+                 <string notr="true">QGroupBox { font: 16px; }
+QGroupBox::title { subcontrol-position: top center;  }
+QPushButton { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: 36px; }
+QPushButton:pressed { background-color: #f2f2f2; }
+QPushButton:hover:!checked { border: 2px solid #B77E2A; }
+QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; }</string>
                 </property>
                 <property name="title">
                  <string>Gimbal Mode Control</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_3">
                  <item>
-                  <widget class="QPushButton" name="pushButton_2">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
+                  <widget class="QPushButton" name="btnHome">
                    <property name="styleSheet">
                     <string notr="true"/>
                    </property>
@@ -512,12 +352,6 @@ QPushButton:checked {
                  </item>
                  <item>
                   <widget class="QPushButton" name="pushButton_3">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
                    <property name="styleSheet">
                     <string notr="true"/>
                    </property>
@@ -534,12 +368,6 @@ QPushButton:checked {
                  </item>
                  <item>
                   <widget class="QPushButton" name="pushButton_4">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
                    <property name="styleSheet">
                     <string notr="true"/>
                    </property>
@@ -556,12 +384,6 @@ QPushButton:checked {
                  </item>
                  <item>
                   <widget class="QPushButton" name="pushButton_5">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
                    <property name="text">
                     <string>Pointing</string>
                    </property>
@@ -575,12 +397,6 @@ QPushButton:checked {
                  </item>
                  <item>
                   <widget class="QPushButton" name="pushButton_7">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>40</height>
-                    </size>
-                   </property>
                    <property name="text">
                     <string>Tracking</string>
                    </property>
@@ -609,37 +425,14 @@ QPushButton:checked {
                </widget>
               </item>
               <item>
-               <widget class="QGroupBox" name="groupBox_3">
-                <property name="minimumSize">
-                 <size>
-                  <width>300</width>
-                  <height>0</height>
-                 </size>
-                </property>
+               <widget class="QGroupBox" name="grpImageProcessing">
                 <property name="styleSheet">
-                 <string notr="true">QGroupBox {
-	font: 16px;
-}
-QGroupBox::title {
-	subcontrol-position: top center;
-}
-QPushButton {
-	font: bold 18px;
-	border: 2px solid #8c8c8c;
-	border-radius: 5px;
-	background-color: white;
-}
-QPushButton:pressed {
-	background-color: #f2f2f2;
-}
-QPushButton:hover:!checked {
-	border: 2px solid #B77E2A;
-}
-QPushButton:checked {
-	color: white;
-	border: 2px solid #224d77;
-	background-color: #224d77;
-}</string>
+                 <string notr="true">QGroupBox { font: 16px; }
+QGroupBox::title { subcontrol-position: top center;  }
+QPushButton { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: 36px; }
+QPushButton:pressed { background-color: #f2f2f2; }
+QPushButton:hover:!checked { border: 2px solid #B77E2A; }
+QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; }</string>
                 </property>
                 <property name="title">
                  <string>Image Processing</string>
@@ -730,7 +523,7 @@ QPushButton:checked {
              </layout>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_4">
+             <widget class="QGroupBox" name="grpCamera">
               <property name="minimumSize">
                <size>
                 <width>800</width>
@@ -738,12 +531,8 @@ QPushButton:checked {
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QGroupBox {
-	font: 16px;
-}
-QGroupBox::title {
-	subcontrol-position: top center;
-}</string>
+               <string notr="true">QGroupBox { font: 16px; }
+QGroupBox::title { subcontrol-position: top center; }</string>
               </property>
               <property name="title">
                <string>Camera</string>
@@ -783,8 +572,8 @@ QGroupBox::title {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>948</width>
-             <height>672</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>

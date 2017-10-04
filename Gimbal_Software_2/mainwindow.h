@@ -9,6 +9,8 @@
 #include <QStringList>
 #include <QToolTip>
 #include <QString>
+#include <QDesktopWidget>
+#include <QFont>
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +31,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QPoint dragPosition;
+
+    void init_GUI();
 };
 
 #endif // MAINWINDOW_H
