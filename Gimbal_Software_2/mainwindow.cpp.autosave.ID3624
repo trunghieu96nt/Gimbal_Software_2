@@ -1,0 +1,36 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+    this->setWindowState(Qt::WindowMaximized);
+
+    /* Connect Signals and Slots */
+    connect(ui->btnControl, SIGNAL(clicked(bool)), this, SLOT(on_btnControl_custom_clicked(bool)));
+    connect(ui->btnSettings, SIGNAL(clicked(bool)), this, SLOT(on_btnSettings_custom_clicked(bool)));
+
+    /* Initialization */
+    ui->btnControl->setChecked(true);
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_btnControl_custom_clicked(bool checked)
+{
+    static
+    ui->stackedWidget->setCurrentIndex(0);
+    if (checked == 0) return;
+}
+
+void MainWindow::on_btnSettings_custom_clicked(bool checked)
+{
+    ui->stackedWidget->setCurrentIndex(1);
+    if (checked == 0) return;
+}
