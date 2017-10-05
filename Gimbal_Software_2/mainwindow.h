@@ -25,8 +25,8 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_btnControl_custom_clicked();
-    void on_btnSettings_custom_clicked();
+    void on_btnControl_clicked();
+    void on_btnSettings_clicked();
 
 private:
     Ui::MainWindow *ui;

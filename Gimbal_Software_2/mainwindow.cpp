@@ -8,10 +8,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowState(Qt::WindowMaximized);
 
-    /* Connect Signals and Slots */
-    connect(ui->btnControl, SIGNAL(clicked()), this, SLOT(on_btnControl_custom_clicked()));
-    connect(ui->btnSettings, SIGNAL(clicked()), this, SLOT(on_btnSettings_custom_clicked()));
-
     /* Initialization */
     init_GUI();
 }
@@ -72,10 +68,10 @@ void MainWindow::init_GUI()
             border-left-style: solid; border-top-right-radius: 3px; border-bottom-right-radius: 3px; \
         } \
         QComboBox::down-arrow{ image: url(:/files/images/arrow_down.png); height: 12px; width: 12px; } \
-        QComboBox::on { border: 2px solid #B77E2A; } \
-        QComboBox:hover { border: 2px solid #B77E2A; } \
+        QComboBox::on { border: 2px solid #cc6600; } \
+        QComboBox:hover { border: 2px solid #cc6600; } \
         QComboBox QAbstractItemView { \
-            border: 2px solid #B77E2A; \
+            border: 2px solid #cc6600; \
             selection-background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #111, stop: 1 #333); \
         } \
         QPushButton { font: bold %3px; color: white; background-color: #224d77; border-radius: 5px; min-height: %5px;} \
@@ -89,7 +85,7 @@ void MainWindow::init_GUI()
         QGroupBox::title { subcontrol-position: top center; } \
         QPushButton { font: bold %2px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: %3px; } \
         QPushButton:pressed { background-color: #f2f2f2; } \
-        QPushButton:hover:!checked { border: 2px solid #B77E2A; } \
+        QPushButton:hover:!checked { border: 2px solid #cc6600; } \
         QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; } \
         ").arg(int(16 * height_Factor)).arg(int(18 * height_Factor)).arg(int(36 * height_Factor));
     ui->grpModeControl->setStyleSheet(stylesheet_Widget);
@@ -101,20 +97,39 @@ void MainWindow::init_GUI()
         ").arg(int(16 * height_Factor));
     ui->grpCamera->setStyleSheet(stylesheet_Widget);
 
+    stylesheet_Widget = QString("\
+        QPlainTextEdit {font: bold %1px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; \
+        min-height: %2px; max-height: %2px; min-width: %3px; max-width: %3px; } \
+        ").arg(int(16 * height_Factor)).arg(int(76 * height_Factor)).arg(int(296 * width_Factor));
+    ui->ptxtStatus->setStyleSheet(stylesheet_Widget);
+
+    stylesheet_Widget = QString("\
+        QGroupBox { font: %1px; } \
+        QGroupBox::title { subcontrol-position: top center; } \
+        QLabel { font: bold %2px; } \
+        QLineEdit { font: bold %2px; border: 2px solid #8f8f8f; border-radius: 5px; min-height: %3px; min-width: %4px} \
+        QLineEdit:focus { border: 2px solid #cc6600; } \
+        QLineEdit:hover { border: 2px solid #cc6600; } \
+        QPushButton { font: bold %2px; color: white; background-color: #224d77; border-radius: 5px; min-height: %5px; min-width: %6px} \
+        QPushButton:pressed { background-color: #1c4063; } \
+        QPushButton:hover:!pressed { background-color: #27598b; } \
+        ").arg(int(16 * height_Factor)).arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(146 * width_Factor)).arg(int(40 * height_Factor)).arg(int(100 * width_Factor));
+    ui->scrollArea_1->setStyleSheet(stylesheet_Widget);
+
     ui->btnControl->setChecked(true);
     ui->btnControl->setDisabled(true);
     ui->btnSettings->setDisabled(false);
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void MainWindow::on_btnControl_custom_clicked()
+void MainWindow::on_btnControl_clicked()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->btnControl->setDisabled(true);
     ui->btnSettings->setDisabled(false);
 }
 
-void MainWindow::on_btnSettings_custom_clicked()
+void MainWindow::on_btnSettings_clicked()
 {
     ui->stackedWidget->setCurrentIndex(1);
     ui->btnSettings->setDisabled(true);
