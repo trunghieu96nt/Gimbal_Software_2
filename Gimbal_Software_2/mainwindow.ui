@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1551</width>
-    <height>845</height>
+    <width>1920</width>
+    <height>1080</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -197,8 +197,8 @@ QPushButton:hover:!pressed { background-color: #113A61; }</string>
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1549</width>
-             <height>791</height>
+             <width>1918</width>
+             <height>1026</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
@@ -241,10 +241,10 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
                  <item row="0" column="1">
-                  <widget class="QComboBox" name="comboBox"/>
+                  <widget class="QComboBox" name="cboSerialPort"/>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QComboBox" name="comboBox_2">
+                  <widget class="QComboBox" name="cboBaudrate">
                    <item>
                     <property name="text">
                      <string>1200</string>
@@ -305,7 +305,7 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                   </widget>
                  </item>
                  <item row="2" column="0" colspan="2">
-                  <widget class="QPushButton" name="pushButton">
+                  <widget class="QPushButton" name="btnConnect">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -523,7 +523,10 @@ QPushButton:checked { color: white; border: 2px solid #224d77; background-color:
               <item>
                <widget class="QPlainTextEdit" name="ptxtStatus">
                 <property name="styleSheet">
-                 <string notr="true">QPlainTextEdit {font: bold 16px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: 76px; max-height: 76px; }</string>
+                 <string notr="true">QPlainTextEdit {
+	font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; 
+	min-height: 76px; max-height: 76px; min-width: 298px; max-width: 298px;
+}</string>
                 </property>
                </widget>
               </item>
@@ -580,7 +583,8 @@ QLineEdit:focus { border: 2px solid #cc6600; }
 QLineEdit:hover { border: 2px solid #cc6600; }
 QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; min-width: 100px}
 QPushButton:pressed { background-color: #1c4063; }
-QPushButton:hover:!pressed { background-color: #27598b; }</string>
+QPushButton:hover:!pressed { background-color: #27598b; }
+QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; }</string>
           </property>
           <property name="widgetResizable">
            <bool>true</bool>
@@ -590,8 +594,8 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1549</width>
-             <height>791</height>
+             <width>1918</width>
+             <height>1026</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_25" rowstretch="0,0,0" columnstretch="0,0,0">
@@ -637,11 +641,11 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
             <item row="1" column="1">
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="3,0,1">
+               <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="3,0,1,0,1">
                 <item>
-                 <widget class="QGroupBox" name="grpFirmwarePID">
+                 <widget class="QGroupBox" name="grpPositionLoop">
                   <property name="styleSheet">
-                   <string notr="true">#grpFirmwarePID { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
+                   <string notr="true">#grpPositionLoop { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
                   </property>
                   <property name="title">
                    <string/>
@@ -656,7 +660,7 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                       <string notr="true"/>
                      </property>
                      <property name="title">
-                      <string>AZ Outer</string>
+                      <string>AZ Tracking</string>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_12">
                       <item row="3" column="1">
@@ -810,7 +814,7 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                       <string notr="true"/>
                      </property>
                      <property name="title">
-                      <string>AZ Inner</string>
+                      <string>AZ Pointing</string>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_11">
                       <item row="3" column="1">
@@ -881,106 +885,13 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                      </layout>
                     </widget>
                    </item>
-                   <item row="0" column="0" colspan="3">
-                    <widget class="QLabel" name="label_39">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
-                     </property>
-                     <property name="text">
-                      <string>Firmware PID Tunner</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QGroupBox" name="groupBox_10">
-                     <property name="styleSheet">
-                      <string notr="true"/>
-                     </property>
-                     <property name="title">
-                      <string>EL Inner</string>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_14">
-                      <item row="3" column="1">
-                       <widget class="QLineEdit" name="lineEdit_51"/>
-                      </item>
-                      <item row="0" column="0">
-                       <widget class="QLabel" name="label_55">
-                        <property name="styleSheet">
-                         <string notr="true"/>
-                        </property>
-                        <property name="text">
-                         <string>Kp:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1">
-                       <widget class="QLineEdit" name="lineEdit_52"/>
-                      </item>
-                      <item row="2" column="0">
-                       <widget class="QLabel" name="label_56">
-                        <property name="styleSheet">
-                         <string notr="true"/>
-                        </property>
-                        <property name="text">
-                         <string>Kd:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="0">
-                       <widget class="QLabel" name="label_57">
-                        <property name="styleSheet">
-                         <string notr="true"/>
-                        </property>
-                        <property name="text">
-                         <string>Kff2:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLabel" name="label_58">
-                        <property name="styleSheet">
-                         <string notr="true"/>
-                        </property>
-                        <property name="text">
-                         <string>Ki:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QLineEdit" name="lineEdit_53"/>
-                      </item>
-                      <item row="2" column="1">
-                       <widget class="QLineEdit" name="lineEdit_54"/>
-                      </item>
-                      <item row="3" column="0">
-                       <widget class="QLabel" name="label_59">
-                        <property name="styleSheet">
-                         <string notr="true"/>
-                        </property>
-                        <property name="text">
-                         <string>Kff1:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="1">
-                       <widget class="QLineEdit" name="lineEdit_55"/>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
                    <item row="2" column="2">
                     <widget class="QGroupBox" name="groupBox_11">
                      <property name="styleSheet">
                       <string notr="true"/>
                      </property>
                      <property name="title">
-                      <string>EL Outer</string>
+                      <string>EL Tracking</string>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_15">
                       <item row="3" column="1">
@@ -1047,6 +958,83 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                       </item>
                       <item row="5" column="1">
                        <widget class="QLineEdit" name="lineEdit_60"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QGroupBox" name="groupBox_10">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>EL Pointing</string>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_14">
+                      <item row="3" column="1">
+                       <widget class="QLineEdit" name="lineEdit_51"/>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_55">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kp:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLineEdit" name="lineEdit_52"/>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_56">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kd:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="0">
+                       <widget class="QLabel" name="label_57">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kff2:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_58">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Ki:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QLineEdit" name="lineEdit_53"/>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QLineEdit" name="lineEdit_54"/>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_59">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kff1:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="1">
+                       <widget class="QLineEdit" name="lineEdit_55"/>
                       </item>
                      </layout>
                     </widget>
@@ -1128,6 +1116,22 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                      </layout>
                     </widget>
                    </item>
+                   <item row="0" column="0" colspan="3">
+                    <widget class="QLabel" name="label_39">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Position Loop</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="3" column="1">
                     <widget class="QPushButton" name="pushButton_2">
                      <property name="sizePolicy">
@@ -1158,30 +1162,27 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QGroupBox" name="grpSoftwarePID">
+                 <widget class="QGroupBox" name="grpVelocityLoop">
                   <property name="styleSheet">
-                   <string notr="true">#grpSoftwarePID { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
+                   <string notr="true">#grpVelocityLoop { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
                   </property>
                   <property name="title">
                    <string/>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_7" rowstretch="0,0,0,0" columnstretch="0">
+                  <layout class="QGridLayout" name="gridLayout_7" rowstretch="0,1,1,0" columnstretch="0">
                    <property name="topMargin">
                     <number>2</number>
                    </property>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_3">
+                   <item row="3" column="0">
+                    <widget class="QPushButton" name="pushButton_6">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
-                     <property name="styleSheet">
-                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
-                     </property>
                      <property name="text">
-                      <string>Software PID Tunner</string>
+                      <string>Write</string>
                      </property>
                     </widget>
                    </item>
@@ -1191,7 +1192,7 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                       <string notr="true"/>
                      </property>
                      <property name="title">
-                      <string>EL Velocity</string>
+                      <string>Elevator</string>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_18">
                       <item row="3" column="1">
@@ -1262,13 +1263,29 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                      </layout>
                     </widget>
                    </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_3">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Velocity Loop</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="1" column="0">
                     <widget class="QGroupBox" name="groupBox_12">
                      <property name="styleSheet">
                       <string notr="true"/>
                      </property>
                      <property name="title">
-                      <string>AZ Velocity</string>
+                      <string>Azimuth</string>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_17">
                       <item row="3" column="1">
@@ -1284,6 +1301,16 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                         </property>
                        </widget>
                       </item>
+                      <item row="5" column="0">
+                       <widget class="QLabel" name="label_72">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kff2:</string>
+                        </property>
+                       </widget>
+                      </item>
                       <item row="0" column="1">
                        <widget class="QLineEdit" name="lineEdit_67"/>
                       </item>
@@ -1294,16 +1321,6 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                         </property>
                         <property name="text">
                          <string>Kd:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="0">
-                       <widget class="QLabel" name="label_72">
-                        <property name="styleSheet">
-                         <string notr="true"/>
-                        </property>
-                        <property name="text">
-                         <string>Kff2:</string>
                         </property>
                        </widget>
                       </item>
@@ -1339,8 +1356,36 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                      </layout>
                     </widget>
                    </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="grpCurrentLoop">
+                  <property name="styleSheet">
+                   <string notr="true">#grpCurrentLoop { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_16" rowstretch="0,1,1,0" columnstretch="0">
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
                    <item row="3" column="0">
-                    <widget class="QPushButton" name="pushButton_6">
+                    <widget class="QPushButton" name="pushButton_15">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -1350,6 +1395,176 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                      <property name="text">
                       <string>Write</string>
                      </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QGroupBox" name="groupBox_15">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Elevator</string>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_20">
+                      <item row="3" column="1">
+                       <widget class="QLineEdit" name="lineEdit_83"/>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_85">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kp:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLineEdit" name="lineEdit_84"/>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_86">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kd:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="0">
+                       <widget class="QLabel" name="label_87">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kff2:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_88">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Ki:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QLineEdit" name="lineEdit_85"/>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QLineEdit" name="lineEdit_86"/>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_89">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kff1:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="1">
+                       <widget class="QLineEdit" name="lineEdit_87"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_4">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Current Loop</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QGroupBox" name="groupBox_14">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="title">
+                      <string>Azimuth</string>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_19">
+                      <item row="3" column="1">
+                       <widget class="QLineEdit" name="lineEdit_78"/>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_80">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kp:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLineEdit" name="lineEdit_79"/>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_81">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kd:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="0">
+                       <widget class="QLabel" name="label_82">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kff2:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_83">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Ki:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QLineEdit" name="lineEdit_80"/>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QLineEdit" name="lineEdit_81"/>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_84">
+                        <property name="styleSheet">
+                         <string notr="true"/>
+                        </property>
+                        <property name="text">
+                         <string>Kff1:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="1">
+                       <widget class="QLineEdit" name="lineEdit_82"/>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                   </layout>
@@ -1371,7 +1586,7 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                </spacer>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,0,1">
+               <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,1,0,0">
                 <item>
                  <widget class="QGroupBox" name="grpAzimuth">
                   <property name="styleSheet">
@@ -1442,7 +1657,9 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                       </sizepolicy>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">QPushButton { background-color: #774122; }</string>
+                      <string notr="true">QPushButton { background-color: #774122; }
+QPushButton:pressed { background-color: #63361c; }
+QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
                      </property>
                      <property name="text">
                       <string>Get Pos</string>
@@ -1480,19 +1697,6 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                    </item>
                   </layout>
                  </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_4">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                 <item>
                  <widget class="QGroupBox" name="grpElevator">
@@ -1564,7 +1768,9 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                       </sizepolicy>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">QPushButton { background-color: #774122; }</string>
+                      <string notr="true">QPushButton { background-color: #774122; }
+QPushButton:pressed { background-color: #63361c; }
+QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
                      </property>
                      <property name="text">
                       <string>Get Pos</string>
@@ -1601,6 +1807,89 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
                     </widget>
                    </item>
                   </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="grpActiveAxis">
+                  <property name="styleSheet">
+                   <string notr="true">#grpActiveAxis { 
+	border: 2px solid gray; border-radius: 10px;	font: 16px; 
+	min-width: 180px; max-width: 180px;
+}
+QPushButton { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: 36px; color: black; }
+QPushButton:pressed { background-color: #f2f2f2; }
+QPushButton:hover:!checked { border: 2px solid #cc6600; }
+QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; }</string>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,1,1">
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="lblPos_5">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Active Axis</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QPushButton" name="btnHome_2">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="text">
+                      <string>Azimuth</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="autoExclusive">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QPushButton" name="btnHome_3">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="text">
+                      <string>Elevator</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="autoExclusive">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPlainTextEdit" name="ptxtStatus_2">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
                  </widget>
                 </item>
                </layout>
