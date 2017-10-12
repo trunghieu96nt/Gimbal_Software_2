@@ -10,7 +10,7 @@
 #include <QToolTip>
 #include <QString>
 #include <QDesktopWidget>
-#include <QFont>
+#include <QSignalMapper>
 
 namespace Ui {
 class MainWindow;
@@ -34,23 +34,61 @@ private slots:
     void on_timerSerialPort_timeout();
     void on_serialPort_readyRead();
 
-    void on_btnHome_clicked();
+    /* Mode Button */
+    void on_btnModeControl_clicked(const QString &cmd_Data);
+
+    /* PID LineEdit */
+    void on_leditPID_editingFinished(const QString &pid_Name);
+
+    void on_btnWritePositionLoop_clicked();
+
+    void on_btnWriteVelocityLoop_clicked();
+
+    void on_btnWriteCurrentLoop_clicked();
+
+    void on_btnAZSetPos_clicked();
+
+    void on_btnAZSetVel_clicked();
+
+    void on_btnAZSetBoth_clicked();
+
+    void on_btnAZGetPos_clicked();
+
+    void on_btnELSetPos_clicked();
+
+    void on_btnELSetVel_clicked();
+
+    void on_btnELSetBoth_clicked();
+
+    void on_btnELGetPos_clicked();
+
+    void on_btnAZActive_clicked(bool checked);
+
+    void on_btnELActive_clicked(bool checked);
 
 private:
     Ui::MainWindow *ui;
+
     QSerialPort *serialPort = new QSerialPort;
     QTimer *timerSerialPort;
-
     QStringList list_Serial_Port;
     QByteArray data_Serial_Port;
+
     double width_Factor, height_Factor;
 
+    QString setted_PID_Value[2][5][5];
+    QSignalMapper *pid_Mapper = new QSignalMapper(this);
+
     void init_GUI();
-    void init_Serial_COM_Port();
+    void init_Page();
+    void init_Serial_Port();
+    void init_Mode_Button_Mapping();
+    void init_PID_LineEdit_Mapping();
 
     bool serialCOMPort_write(const QByteArray &data);
     bool send_Command(char msgID, const QByteArray &payload);
     bool parse_Msg(const QByteArray &msg);
+    void status_Append_Text(const QString &text);
 };
 
 #endif // MAINWINDOW_H

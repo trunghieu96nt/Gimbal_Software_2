@@ -10,10 +10,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* Initialization */
     init_GUI();
-    init_Page();
     init_Serial_Port();
-    init_Mode_Button_Mapping();
-    init_PID_LineEdit_Mapping();
+
+
 }
 
 MainWindow::~MainWindow()
@@ -114,17 +113,14 @@ void MainWindow::init_GUI()
         QGroupBox { font: %1px; } \
         QGroupBox::title { subcontrol-position: top center; } \
         QLabel { font: bold %2px; } \
-        QLineEdit { \
-            font: bold %2px; border: 2px solid #8f8f8f; border-radius: 5px; \
-            min-height: %3px; min-width: %4px; padding-left: 4px; \
-        } \
+        QLineEdit { font: bold %2px; border: 2px solid #8f8f8f; border-radius: 5px; min-height: %3px; min-width: %4px} \
         QLineEdit:focus { border: 2px solid #cc6600; } \
         QLineEdit:hover { border: 2px solid #cc6600; } \
         QPushButton { font: bold %2px; color: white; background-color: #224d77; border-radius: 5px; min-height: %5px; min-width: %6px} \
         QPushButton:pressed { background-color: #1c4063; } \
         QPushButton:hover:!pressed { background-color: #27598b; } \
         QPlainTextEdit { font: %7px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; } \
-        ").arg(int(16 * height_Factor)).arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor))
+        ").arg(int(16 * height_Factor)).arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(146 * width_Factor))
                                 .arg(int(40 * height_Factor)).arg(int(100 * width_Factor)).arg(int(14 * height_Factor));
     ui->scrollArea_1->setStyleSheet(stylesheet_Widget);
 
@@ -139,10 +135,8 @@ void MainWindow::init_GUI()
         QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; } \
     ").arg(int(16 * height_Factor)).arg(int(180 * width_Factor)).arg(int(18 * height_Factor)).arg(int(36 * height_Factor));
     ui->grpActiveAxis->setStyleSheet(stylesheet_Widget);
-}
 
-void MainWindow::init_Page()
-{
+
     ui->btnControl->setChecked(true);
     ui->btnControl->setDisabled(true);
     ui->btnSettings->setDisabled(false);
@@ -151,9 +145,6 @@ void MainWindow::init_Page()
 
 void MainWindow::init_Serial_Port()
 {
-    /* combo box baudrate Serial Port */
-    ui->cboBaudrate->setCurrentText("115200");
-
     connect(serialPort, SIGNAL(readyRead()), this, SLOT(on_serialPort_readyRead()));
 
     serialPort->setDataBits(QSerialPort::Data8);
@@ -174,9 +165,8 @@ void MainWindow::init_Serial_Port()
     timerSerialPort->start(1000);
 }
 
-void MainWindow::init_Mode_Button_Mapping()
+void MainWindow::init_Signals_Mapping()
 {
-    /* Mode Button */
     QSignalMapper *mode_Mapper = new QSignalMapper(this);
 
     mode_Mapper->setMapping(ui->btnHome, "HOME");
@@ -192,39 +182,6 @@ void MainWindow::init_Mode_Button_Mapping()
     connect(ui->btnTracking, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
 
     connect(mode_Mapper, SIGNAL(mapped(const QString &)), SLOT(on_btnModeControl_clicked(const QString &)));
-}
-
-void MainWindow::init_PID_LineEdit_Mapping()
-{
-    /* PID LineEdit */
-    QLineEdit *leditPID;
-    QDoubleValidator *pid_Validator = new QDoubleValidator(this);
-
-    pid_Validator->setDecimals(6);
-    pid_Validator->setBottom(0.0);
-
-    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
-    {
-        for (int idx_PID_Name = 0; idx_PID_Name < 5; ++idx_PID_Name)
-        {
-            for (int idx_Kx = 0; idx_Kx < 5; ++idx_Kx)
-            {
-               leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-
-               /* Set Default Value */
-               leditPID->setText("0.0");
-               setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = "0.0";
-
-               /* Set Double Validator */
-               leditPID->setValidator(pid_Validator);
-
-               /* Set Mapping */
-               pid_Mapper->setMapping(leditPID, QString("%1%2%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-               connect(leditPID, SIGNAL(editingFinished()), pid_Mapper, SLOT(map()));
-            }
-        }
-    }
-    connect(pid_Mapper, SIGNAL(mapped(const QString &)), SLOT(on_leditPID_editingFinished(const QString &)));
 }
 
 /* Page Buttons */
@@ -261,7 +218,8 @@ void MainWindow::on_btnConnect_clicked()
                 QPushButton:hover:!pressed { background-color: #8b4c27; } \
                 ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
             ui->btnConnect->setStyleSheet(stylesheet_Widget);
-            status_Append_Text("- " + serialPort->portName() + " is connected");
+            ui->ptxtStatus_0->appendPlainText("- " + serialPort->portName() + " is connected");
+            ui->ptxtStatus_0->appendPlainText("- " + serialPort->portName() + " is connected");
             timerSerialPort->stop();
         }
     }
@@ -275,7 +233,7 @@ void MainWindow::on_btnConnect_clicked()
             ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
         ui->btnConnect->setStyleSheet(stylesheet_Widget);
         serialPort->close();
-        status_Append_Text("- " + serialPort->portName() + " is disconnected");
+        ui->ptxtStatus->appendPlainText("- " + serialPort->portName() + " is disconnected");
         timerSerialPort->start(1000);
     }
 }
@@ -436,7 +394,7 @@ bool MainWindow::parse_Msg(const QByteArray &msg)
         if (msg.at(8) == 0x00) show_Res_Msg.append("Ok");
         else if (msg.at(8) == 0x01) show_Res_Msg.append("Error");
 
-        status_Append_Text(show_Res_Msg);
+        ui->ptxtStatus->appendPlainText(show_Res_Msg);
         return true;
     }
 
@@ -500,15 +458,8 @@ bool MainWindow::parse_Msg(const QByteArray &msg)
         show_Res_Msg.append("- Receive: Get Params Done ");
         break;
     }
-    status_Append_Text(show_Res_Msg);
+    ui->ptxtStatus->appendPlainText(show_Res_Msg);
     return true;
-}
-
-/* Status Text for ptxtStatus_x */
-void MainWindow::status_Append_Text(const QString &text)
-{
-    ui->ptxtStatus_0->appendPlainText(text);
-    ui->ptxtStatus_1->appendPlainText(text);
 }
 
 /* Mode Button Signals */
@@ -549,362 +500,15 @@ void MainWindow::on_btnModeControl_clicked(const QString &cmd)
     }
 
     if (send_Command(msgID, dataArray) == true)
-        status_Append_Text("- Send: Set " + cmd);
-    else
-        status_Append_Text("- No Serial Port is connected");
-}
-
-/* PID LineEdit & Write Button Signals */
-void MainWindow::on_leditPID_editingFinished(const QString &pid_Name)
-{
-    QLineEdit *ledit_Sender = qobject_cast<QLineEdit *>(pid_Mapper->mapping(pid_Name));
-    int idx_Axis, idx_PID_Name, idx_Kx;
-    static QString stylesheet_Widget_Changed = QString("\
-        QLineEdit { \
-            font: bold %1px; border: 2px solid #808000; border-radius: 5px; \
-            min-height: %2px; min-width: %3px; padding-left: 4px; color: #b3b300; \
-        } \
-        QLineEdit:focus { border: 2px solid #b3b300; } \
-        QLineEdit:hover { border: 2px solid #b3b300; } \
-    ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
-   static QString stylesheet_Widget_Not_Changed = QString("\
-       QLineEdit { \
-           font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
-           min-height: %2px; min-width: %3px; padding-left: 4px; \
-       } \
-       QLineEdit:focus { border: 2px solid #cc6600; } \
-       QLineEdit:hover { border: 2px solid #cc6600; } \
-   ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
-
-    idx_Axis = pid_Name.at(0).digitValue();
-    idx_PID_Name = pid_Name.at(1).digitValue();
-    idx_Kx = pid_Name.at(2).digitValue();
-
-    if (setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] != ledit_Sender->text())
     {
-        ledit_Sender->setStyleSheet(stylesheet_Widget_Changed);
+        ui->ptxtStatus_0->appendPlainText("- Send: Set Tracking ");
+        ui->ptxtStatus_1->appendPlainText("- Send: Set Tracking ");
     }
     else
     {
-        ledit_Sender->setStyleSheet(stylesheet_Widget_Not_Changed);
+        ui->ptxtStatus_0->appendPlainText("- No Serial Port is connected");
+        ui->ptxtStatus_1->appendPlainText("- No Serial Port is connected");
     }
 }
 
-void MainWindow::on_btnWritePositionLoop_clicked()
-{
-
-}
-
-void MainWindow::on_btnWriteVelocityLoop_clicked()
-{
-
-}
-
-void MainWindow::on_btnWriteCurrentLoop_clicked()
-{
-
-}
-
-/* Pos and Vel (Set, Get) */
-void MainWindow::on_btnAZSetPos_clicked()
-{
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
-
-    if (ui->leditAZPos->text() == NULL)
-    {
-        QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x01);
-
-        scaled_Value = qint32 (ui->leditAZPos->text().toDouble() * 100);
-        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-        {
-            QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-        }
-        else
-        {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
-
-            if (send_Command(0x05, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set AZ Pos");
-            }
-            else
-            {
-                status_Append_Text("- No COM Port is connected");
-            }
-        }
-    }
-}
-
-void MainWindow::on_btnAZSetVel_clicked()
-{
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
-
-    if (ui->leditAZVel->text() == NULL)
-    {
-        QToolTip::showText(ui->leditAZVel->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x01);
-
-        scaled_Value = qint32 (ui->leditAZVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditAZVel->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//        }
-//        else
-        {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
-
-            if (send_Command(0x06, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set AZ Vel");
-            }
-            else
-            {
-                status_Append_Text("- No COM Port is connected");
-            }
-        }
-    }
-}
-
-void MainWindow::on_btnAZSetBoth_clicked()
-{
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
-
-    if (ui->leditAZPos->text() == NULL)
-    {
-        QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Enter value");
-    }
-    else if (ui->leditAZVel->text() == NULL)
-    {
-        QToolTip::showText(ui->leditAZVel->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x01);
-
-        scaled_Value = qint32 (ui->leditAZPos->text().toDouble() * 100);
-        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-        {
-            QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-            return;
-        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
-
-        scaled_Value = qint32 (ui->leditAZVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//            return;
-//        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
-
-        if (send_Command(0x07, data_Array) == true)
-        {
-            status_Append_Text("- Send: Set AZ Pos Vel");
-        }
-        else
-        {
-            status_Append_Text("- No COM Port is connected");
-        }
-    }
-}
-
-void MainWindow::on_btnAZGetPos_clicked()
-{
-    QByteArray data_Array;
-
-    data_Array.append((char)0x01);
-    if (send_Command(0x08, data_Array) == true)
-    {
-        status_Append_Text("- Send: Get AZ Pos");
-    }
-    else
-    {
-        status_Append_Text("- No COM Port is connected");
-    }
-}
-
-void MainWindow::on_btnELSetPos_clicked()
-{
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
-
-    if (ui->leditELPos->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x02);
-
-        scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
-        if ((scaled_Value > 3000) || (scaled_Value < -3000))
-        {
-            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-30, 30)");
-        }
-        else
-        {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
-
-            if (send_Command(0x05, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set EL Pos");
-            }
-            else
-            {
-                status_Append_Text("- No COM Port is connected");
-            }
-        }
-    }
-}
-
-void MainWindow::on_btnELSetVel_clicked()
-{
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
-
-    if (ui->leditELVel->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELVel->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x02);
-
-        scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//        }
-//        else
-        {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
-
-            if (send_Command(0x06, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set EL Vel");
-            }
-            else
-            {
-                status_Append_Text("- No COM Port is connected");
-            }
-        }
-    }
-}
-
-void MainWindow::on_btnELSetBoth_clicked()
-{
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
-
-    if (ui->leditELPos->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Enter value");
-    }
-    else if (ui->leditELVel->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELVel->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x02);
-
-        scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
-        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-        {
-            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-            return;
-        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
-
-        scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//            return;
-//        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
-
-        if (send_Command(0x07, data_Array) == true)
-        {
-            status_Append_Text("- Send: Set EL Pos Vel");
-        }
-        else
-        {
-            status_Append_Text("- No COM Port is connected");
-        }
-    }
-}
-
-void MainWindow::on_btnELGetPos_clicked()
-{
-    QByteArray data_Array;
-
-    data_Array.append((char)0x02);
-    if (send_Command(0x08, data_Array) == true)
-    {
-        status_Append_Text("- Send: Get EL Pos");
-    }
-    else
-    {
-        status_Append_Text("- No COM Port is connected");
-    }
-}
-
-/* Active Axis */
-void MainWindow::on_btnAZActive_clicked(bool checked)
-{
-    if (checked == true)
-    {
-
-    }
-    else
-    {
-
-    }
-}
-
-void MainWindow::on_btnELActive_clicked(bool checked)
-{
-    if (checked == true)
-    {
-
-    }
-    else
-    {
-
-    }
-}
+/* Mode Button Signals */

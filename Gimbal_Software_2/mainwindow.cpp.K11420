@@ -719,192 +719,36 @@ void MainWindow::on_btnAZSetBoth_clicked()
         data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
         data_Array.append((char)((scaled_Value) & 0x0ff));
 
-        if (send_Command(0x07, data_Array) == true)
+        if (sendCommand(0x07, dataArray) == true)
         {
-            status_Append_Text("- Send: Set AZ Pos Vel");
+            ui->pteStatus->appendPlainText("- Send: Set AZ Pos Vel");
         }
         else
-        {
-            status_Append_Text("- No COM Port is connected");
-        }
+            ui->pteStatus->appendPlainText("- No COM Port is connected");
     }
 }
 
 void MainWindow::on_btnAZGetPos_clicked()
 {
-    QByteArray data_Array;
 
-    data_Array.append((char)0x01);
-    if (send_Command(0x08, data_Array) == true)
-    {
-        status_Append_Text("- Send: Get AZ Pos");
-    }
-    else
-    {
-        status_Append_Text("- No COM Port is connected");
-    }
 }
 
 void MainWindow::on_btnELSetPos_clicked()
 {
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
 
-    if (ui->leditELPos->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x02);
-
-        scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
-        if ((scaled_Value > 3000) || (scaled_Value < -3000))
-        {
-            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-30, 30)");
-        }
-        else
-        {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
-
-            if (send_Command(0x05, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set EL Pos");
-            }
-            else
-            {
-                status_Append_Text("- No COM Port is connected");
-            }
-        }
-    }
 }
 
 void MainWindow::on_btnELSetVel_clicked()
 {
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
 
-    if (ui->leditELVel->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELVel->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x02);
-
-        scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//        }
-//        else
-        {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
-
-            if (send_Command(0x06, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set EL Vel");
-            }
-            else
-            {
-                status_Append_Text("- No COM Port is connected");
-            }
-        }
-    }
 }
 
 void MainWindow::on_btnELSetBoth_clicked()
 {
-    QByteArray data_Array;
-    qint32 scaled_Value = 0;
 
-    if (ui->leditELPos->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Enter value");
-    }
-    else if (ui->leditELVel->text() == NULL)
-    {
-        QToolTip::showText(ui->leditELVel->mapToGlobal(QPoint()), "Enter value");
-    }
-    else
-    {
-        data_Array.append((char)0x02);
-
-        scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
-        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-        {
-            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-            return;
-        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
-
-        scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//            return;
-//        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
-
-        if (send_Command(0x07, data_Array) == true)
-        {
-            status_Append_Text("- Send: Set EL Pos Vel");
-        }
-        else
-        {
-            status_Append_Text("- No COM Port is connected");
-        }
-    }
 }
 
 void MainWindow::on_btnELGetPos_clicked()
 {
-    QByteArray data_Array;
 
-    data_Array.append((char)0x02);
-    if (send_Command(0x08, data_Array) == true)
-    {
-        status_Append_Text("- Send: Get EL Pos");
-    }
-    else
-    {
-        status_Append_Text("- No COM Port is connected");
-    }
-}
-
-/* Active Axis */
-void MainWindow::on_btnAZActive_clicked(bool checked)
-{
-    if (checked == true)
-    {
-
-    }
-    else
-    {
-
-    }
-}
-
-void MainWindow::on_btnELActive_clicked(bool checked)
-{
-    if (checked == true)
-    {
-
-    }
-    else
-    {
-
-    }
 }
