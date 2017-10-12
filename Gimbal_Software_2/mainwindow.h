@@ -77,7 +77,7 @@ private:
     double width_Factor, height_Factor;
 
     QString setted_PID_Value[2][5][5];
-    QSignalMapper *pid_Mapper = new QSignalMapper(this);
+    bool changed_PID_LineEdit[2][5][5];
 
     void init_GUI();
     void init_Page();
@@ -85,7 +85,8 @@ private:
     void init_Mode_Button_Mapping();
     void init_PID_LineEdit_Mapping();
 
-    bool serialCOMPort_write(const QByteArray &data);
+    bool load_All_Params();
+    bool serialPort_write(const QByteArray &data);
     bool send_Command(char msgID, const QByteArray &payload);
     bool parse_Msg(const QByteArray &msg);
     void status_Append_Text(const QString &text);

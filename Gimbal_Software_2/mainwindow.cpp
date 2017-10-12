@@ -196,7 +196,31 @@ void MainWindow::init_Mode_Button_Mapping()
 
 void MainWindow::init_PID_LineEdit_Mapping()
 {
+    /* Acronym ------------------------------------------------------------------------------------
+    **
+    ** idx_Axis: 0 - 1
+    **      + 0: Azimuth
+    **      + 1: Elevator
+    **
+    **  idx_PID_Name: 0 - 4
+    **      + 0: Manual
+    **      + 1: Pointing
+    **      + 2: Tracking
+    **      + 3: Velocity
+    **      + 4: Current
+    **
+    **  idx_Kx: 0 - 4
+    **      + 0: Kp
+    **      + 1: Ki
+    **      + 2: Kd
+    **      + 3: Kff1
+    **      + 4: Kff2
+    **
+    ** End of Acronym ---------------------------------------------------------------------------*/
+
+
     /* PID LineEdit */
+    QSignalMapper *pid_Mapper = new QSignalMapper(this);
     QLineEdit *leditPID;
     QDoubleValidator *pid_Validator = new QDoubleValidator(this);
 
@@ -205,15 +229,16 @@ void MainWindow::init_PID_LineEdit_Mapping()
 
     for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
     {
-        for (int idx_PID_Name = 0; idx_PID_Name < 5; ++idx_PID_Name)
+        for (int idx_PID_Name = 0; idx_PID_Name < 5; idx_PID_Name++)
         {
-            for (int idx_Kx = 0; idx_Kx < 5; ++idx_Kx)
+            for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
             {
                leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
 
                /* Set Default Value */
                leditPID->setText("0.0");
                setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = "0.0";
+               changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
 
                /* Set Double Validator */
                leditPID->setValidator(pid_Validator);
@@ -263,6 +288,7 @@ void MainWindow::on_btnConnect_clicked()
             ui->btnConnect->setStyleSheet(stylesheet_Widget);
             status_Append_Text("- " + serialPort->portName() + " is connected");
             timerSerialPort->stop();
+            load_All_Params();
         }
     }
     else
@@ -324,7 +350,7 @@ void MainWindow::on_serialPort_readyRead()
 }
 
 /* Serial Port functions */
-bool MainWindow::serialCOMPort_write(const QByteArray &data)
+bool MainWindow::serialPort_write(const QByteArray &data)
 {
     if (serialPort->isOpen() == true)
     {
@@ -336,31 +362,31 @@ bool MainWindow::serialCOMPort_write(const QByteArray &data)
 
 bool MainWindow::send_Command(char msgID, const QByteArray &payload)
 {
-    QByteArray dataArray;
+    QByteArray data_Array;
     quint16 checkSum = 0;
 
     /* Header */
-    dataArray.append(QByteArray::fromRawData("\x47\x42\x02\x01\x00", 5));
+    data_Array.append(QByteArray::fromRawData("\x47\x42\x02\x01\x00", 5));
 
     /* Length */
-    dataArray.append((char)(1 + payload.count() + 2));
+    data_Array.append((char)(1 + payload.count() + 2));
 
     /* MsgID */
-    dataArray.append(msgID);
+    data_Array.append(msgID);
 
     /* Payload */
-    dataArray.append(payload);
+    data_Array.append(payload);
 
     /* Check Sum */
-    for (int i = 0; i < dataArray.count(); i++)
+    for (int i = 0; i < data_Array.count(); i++)
     {
-        checkSum += static_cast<unsigned char>(dataArray.at(i));
+        checkSum += static_cast<unsigned char>(data_Array.at(i));
     }
     checkSum = ~checkSum;
-    dataArray.append((char)((checkSum >> 8) & 0x0ff));
-    dataArray.append((char)(checkSum & 0x0ff));
+    data_Array.append((char)((checkSum >> 8) & 0x0ff));
+    data_Array.append((char)(checkSum & 0x0ff));
 
-    return serialCOMPort_write(dataArray);
+    return serialPort_write(data_Array);
 }
 
 bool MainWindow::parse_Msg(const QByteArray &msg)
@@ -504,6 +530,18 @@ bool MainWindow::parse_Msg(const QByteArray &msg)
     return true;
 }
 
+/* Load All Params */
+bool MainWindow::load_All_Params()
+{
+    /* Load PID Params */
+
+    /* Load Mode */
+
+    /* Load Active Axis */
+
+    return true;
+}
+
 /* Status Text for ptxtStatus_x */
 void MainWindow::status_Append_Text(const QString &text)
 {
@@ -514,11 +552,12 @@ void MainWindow::status_Append_Text(const QString &text)
 /* Mode Button Signals */
 void MainWindow::on_btnModeControl_clicked(const QString &cmd)
 {
-    QByteArray dataArray;
+    QByteArray data_Array;
     char msgID;
 
     /* Set both (AZ and EL) */
-    dataArray.append((char)0x03);
+    data_Array.clear();
+    data_Array.append((char)0x03);
 
     if (cmd == "HOME")
     {
@@ -535,20 +574,20 @@ void MainWindow::on_btnModeControl_clicked(const QString &cmd)
     else if (cmd == "MANUAL")
     {
         msgID = (char)(0x04);
-        dataArray.append((char)0x00);
+        data_Array.append((char)0x00);
     }
     else if (cmd == "POINTING")
     {
         msgID = (char)(0x04);
-        dataArray.append((char)0x02);
+        data_Array.append((char)0x02);
     }
     else if (cmd == "TRACKING")
     {
         msgID = (char)(0x04);
-        dataArray.append((char)0x01);
+        data_Array.append((char)0x01);
     }
 
-    if (send_Command(msgID, dataArray) == true)
+    if (send_Command(msgID, data_Array) == true)
         status_Append_Text("- Send: Set " + cmd);
     else
         status_Append_Text("- No Serial Port is connected");
@@ -557,15 +596,15 @@ void MainWindow::on_btnModeControl_clicked(const QString &cmd)
 /* PID LineEdit & Write Button Signals */
 void MainWindow::on_leditPID_editingFinished(const QString &pid_Name)
 {
-    QLineEdit *ledit_Sender = qobject_cast<QLineEdit *>(pid_Mapper->mapping(pid_Name));
+    QLineEdit *ledit_Sender;
     int idx_Axis, idx_PID_Name, idx_Kx;
     static QString stylesheet_Widget_Changed = QString("\
         QLineEdit { \
-            font: bold %1px; border: 2px solid #808000; border-radius: 5px; \
+            font: bold %1px; border: 2px solid #b3b300; border-radius: 5px; \
             min-height: %2px; min-width: %3px; padding-left: 4px; color: #b3b300; \
         } \
-        QLineEdit:focus { border: 2px solid #b3b300; } \
-        QLineEdit:hover { border: 2px solid #b3b300; } \
+        QLineEdit:focus { border: 2px solid #cccc00; } \
+        QLineEdit:hover { border: 2px solid #cccc00; } \
     ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
    static QString stylesheet_Widget_Not_Changed = QString("\
        QLineEdit { \
@@ -580,29 +619,177 @@ void MainWindow::on_leditPID_editingFinished(const QString &pid_Name)
     idx_PID_Name = pid_Name.at(1).digitValue();
     idx_Kx = pid_Name.at(2).digitValue();
 
+    ledit_Sender =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+
     if (setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] != ledit_Sender->text())
     {
         ledit_Sender->setStyleSheet(stylesheet_Widget_Changed);
+        changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = true;
     }
     else
     {
         ledit_Sender->setStyleSheet(stylesheet_Widget_Not_Changed);
+        changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
     }
 }
 
 void MainWindow::on_btnWritePositionLoop_clicked()
 {
+    QLineEdit *leditPID;
+    QByteArray data_Array;
+    quint32 scaled_Value = 0;
+    bool first_Send_Flag = false;
 
+    ui->btnWritePositionLoop->setDisabled(true);
+    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
+    {
+        for (int idx_PID_Name = 0; idx_PID_Name < 3; idx_PID_Name++)
+        {
+            for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
+            {
+                leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                if (leditPID->text() == NULL)
+                {
+                    status_Append_Text(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                    leditPID->setText(setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx]);
+                    changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
+                }
+                if (changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] == true)
+                {
+                    data_Array.clear();
+                    data_Array.append((char)(1 + idx_Axis));
+                    data_Array.append((char)(1 + idx_PID_Name));
+
+                    scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
+                    data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
+                    data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
+                    data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
+                    data_Array.append((char)((scaled_Value) & 0x0ff));
+
+                    if (send_Command(0x09 + idx_Kx, data_Array) == true)
+                    {
+                        if (first_Send_Flag == false)
+                        {
+                            first_Send_Flag = true;
+                            status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                        }
+                    }
+                    else
+                    {
+                        status_Append_Text("- No Serial Port is connected");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    ui->btnWritePositionLoop->setDisabled(false);
 }
 
 void MainWindow::on_btnWriteVelocityLoop_clicked()
 {
+    QLineEdit *leditPID;
+    QByteArray data_Array;
+    quint32 scaled_Value = 0;
+    bool first_Send_Flag = false;
 
+    ui->btnWriteVelocityLoop->setDisabled(true);
+    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
+    {
+        for (int idx_PID_Name = 3; idx_PID_Name < 4; idx_PID_Name++)
+        {
+            for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
+            {
+                leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                if (leditPID->text() == NULL)
+                {
+                    status_Append_Text(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                    leditPID->setText(setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx]);
+                    changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
+                }
+                if (changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] == true)
+                {
+                    data_Array.clear();
+                    data_Array.append((char)(1 + idx_Axis));
+                    data_Array.append((char)(1 + idx_PID_Name));
+
+                    scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
+                    data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
+                    data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
+                    data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
+                    data_Array.append((char)((scaled_Value) & 0x0ff));
+
+                    if (send_Command(0x09 + idx_Kx, data_Array) == true)
+                    {
+                        if (first_Send_Flag == false)
+                        {
+                            first_Send_Flag = true;
+                            status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                        }
+                    }
+                    else
+                    {
+                        status_Append_Text("- No Serial Port is connected");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    ui->btnWriteVelocityLoop->setDisabled(false);
 }
 
 void MainWindow::on_btnWriteCurrentLoop_clicked()
 {
+    QLineEdit *leditPID;
+    QByteArray data_Array;
+    quint32 scaled_Value = 0;
+    bool first_Send_Flag = false;
 
+    ui->btnWriteCurrentLoop->setDisabled(true);
+    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
+    {
+        for (int idx_PID_Name = 4; idx_PID_Name < 5; idx_PID_Name++)
+        {
+            for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
+            {
+                leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                if (leditPID->text() == NULL)
+                {
+                    status_Append_Text(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                    leditPID->setText(setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx]);
+                    changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
+                }
+                if (changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] == true)
+                {
+                    data_Array.clear();
+                    data_Array.append((char)(1 + idx_Axis));
+                    data_Array.append((char)(1 + idx_PID_Name));
+
+                    scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
+                    data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
+                    data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
+                    data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
+                    data_Array.append((char)((scaled_Value) & 0x0ff));
+
+                    if (send_Command(0x09 + idx_Kx, data_Array) == true)
+                    {
+                        if (first_Send_Flag == false)
+                        {
+                            first_Send_Flag = true;
+                            status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                        }
+                    }
+                    else
+                    {
+                        status_Append_Text("- No Serial Port is connected");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    ui->btnWriteCurrentLoop->setDisabled(false);
 }
 
 /* Pos and Vel (Set, Get) */
@@ -617,6 +804,7 @@ void MainWindow::on_btnAZSetPos_clicked()
     }
     else
     {
+        data_Array.clear();
         data_Array.append((char)0x01);
 
         scaled_Value = qint32 (ui->leditAZPos->text().toDouble() * 100);
@@ -637,7 +825,7 @@ void MainWindow::on_btnAZSetPos_clicked()
             }
             else
             {
-                status_Append_Text("- No COM Port is connected");
+                status_Append_Text("- No Serial Port is connected");
             }
         }
     }
@@ -654,6 +842,7 @@ void MainWindow::on_btnAZSetVel_clicked()
     }
     else
     {
+        data_Array.clear();
         data_Array.append((char)0x01);
 
         scaled_Value = qint32 (ui->leditAZVel->text().toDouble() * 100);
@@ -674,7 +863,7 @@ void MainWindow::on_btnAZSetVel_clicked()
             }
             else
             {
-                status_Append_Text("- No COM Port is connected");
+                status_Append_Text("- No Serial Port is connected");
             }
         }
     }
@@ -695,6 +884,7 @@ void MainWindow::on_btnAZSetBoth_clicked()
     }
     else
     {
+        data_Array.clear();
         data_Array.append((char)0x01);
 
         scaled_Value = qint32 (ui->leditAZPos->text().toDouble() * 100);
@@ -725,7 +915,7 @@ void MainWindow::on_btnAZSetBoth_clicked()
         }
         else
         {
-            status_Append_Text("- No COM Port is connected");
+            status_Append_Text("- No Serial Port is connected");
         }
     }
 }
@@ -734,6 +924,7 @@ void MainWindow::on_btnAZGetPos_clicked()
 {
     QByteArray data_Array;
 
+    data_Array.clear();
     data_Array.append((char)0x01);
     if (send_Command(0x08, data_Array) == true)
     {
@@ -741,7 +932,7 @@ void MainWindow::on_btnAZGetPos_clicked()
     }
     else
     {
-        status_Append_Text("- No COM Port is connected");
+        status_Append_Text("- No Serial Port is connected");
     }
 }
 
@@ -756,6 +947,7 @@ void MainWindow::on_btnELSetPos_clicked()
     }
     else
     {
+        data_Array.clear();
         data_Array.append((char)0x02);
 
         scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
@@ -776,7 +968,7 @@ void MainWindow::on_btnELSetPos_clicked()
             }
             else
             {
-                status_Append_Text("- No COM Port is connected");
+                status_Append_Text("- No Serial Port is connected");
             }
         }
     }
@@ -793,6 +985,7 @@ void MainWindow::on_btnELSetVel_clicked()
     }
     else
     {
+        data_Array.clear();
         data_Array.append((char)0x02);
 
         scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
@@ -813,7 +1006,7 @@ void MainWindow::on_btnELSetVel_clicked()
             }
             else
             {
-                status_Append_Text("- No COM Port is connected");
+                status_Append_Text("- No Serial Port is connected");
             }
         }
     }
@@ -834,6 +1027,7 @@ void MainWindow::on_btnELSetBoth_clicked()
     }
     else
     {
+        data_Array.clear();
         data_Array.append((char)0x02);
 
         scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
@@ -864,7 +1058,7 @@ void MainWindow::on_btnELSetBoth_clicked()
         }
         else
         {
-            status_Append_Text("- No COM Port is connected");
+            status_Append_Text("- No Serial Port is connected");
         }
     }
 }
@@ -873,6 +1067,7 @@ void MainWindow::on_btnELGetPos_clicked()
 {
     QByteArray data_Array;
 
+    data_Array.clear();
     data_Array.append((char)0x02);
     if (send_Command(0x08, data_Array) == true)
     {
@@ -880,7 +1075,7 @@ void MainWindow::on_btnELGetPos_clicked()
     }
     else
     {
-        status_Append_Text("- No COM Port is connected");
+        status_Append_Text("- No Serial Port is connected");
     }
 }
 
