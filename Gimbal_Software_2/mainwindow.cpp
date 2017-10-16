@@ -154,13 +154,6 @@ void MainWindow::init_Serial_Port()
     /* combo box baudrate Serial Port */
     ui->cboBaudrate->setCurrentText("115200");
 
-    connect(serialPort, SIGNAL(readyRead()), this, SLOT(on_serialPort_readyRead()));
-
-    serialPort->setDataBits(QSerialPort::Data8);
-    serialPort->setParity(QSerialPort::NoParity);
-    serialPort->setStopBits(QSerialPort::OneStop);
-    serialPort->setFlowControl(QSerialPort::NoFlowControl);
-
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
         /*qDebug() << "Name : " << info.portName();
@@ -170,15 +163,13 @@ void MainWindow::init_Serial_Port()
     }
 
     timerSerialPort = new QTimer(this);
-    connect(timerSerialPort, SIGNAL(timeout()), this, SLOT(on_timerSerialPort_timeout()));
+    connect(timerSerialPort, SIGNAL(timeout()), this, SLOT(timerSerialPort_timeout()));
     timerSerialPort->start(1000);
 }
 
 void MainWindow::init_Mode_Button_Mapping()
 {
     /* Mode Button */
-    QSignalMapper *mode_Mapper = new QSignalMapper(this);
-
     mode_Mapper->setMapping(ui->btnHome, "HOME");
     mode_Mapper->setMapping(ui->btnStop, "STOP");
     mode_Mapper->setMapping(ui->btnManual, "MANUAL");
@@ -191,7 +182,7 @@ void MainWindow::init_Mode_Button_Mapping()
     connect(ui->btnPointing, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
     connect(ui->btnTracking, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
 
-    connect(mode_Mapper, SIGNAL(mapped(const QString &)), SLOT(on_btnModeControl_clicked(const QString &)));
+    connect(mode_Mapper, SIGNAL(mapped(const QString &)), SLOT(btnMode_clicked(const QString &)));
 }
 
 void MainWindow::init_PID_LineEdit_Mapping()
@@ -249,7 +240,7 @@ void MainWindow::init_PID_LineEdit_Mapping()
             }
         }
     }
-    connect(pid_Mapper, SIGNAL(mapped(const QString &)), SLOT(on_leditPID_editingFinished(const QString &)));
+    connect(pid_Mapper, SIGNAL(mapped(const QString &)), SLOT(leditPID_editingFinished(const QString &)));
 }
 
 /* Page Buttons */
@@ -274,10 +265,8 @@ void MainWindow::on_btnConnect_clicked()
 
     if (ui->btnConnect->text() == "Connect")
     {
-        serialPort->setBaudRate(ui->cboBaudrate->currentText().toInt(NULL, 10));
-        serialPort->setPortName(ui->cboSerialPort->currentText());
-
-        if (serialPort->open(QSerialPort::ReadWrite) == true)
+        if (sport_Thread.connect_Port(ui->cboSerialPort->currentText(),
+                                      ui->cboBaudrate->currentText().toInt(NULL, 10)) == true)
         {
             ui->btnConnect->setText("Disconnect");
             stylesheet_Widget = QString("\
@@ -286,9 +275,9 @@ void MainWindow::on_btnConnect_clicked()
                 QPushButton:hover:!pressed { background-color: #8b4c27; } \
                 ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
             ui->btnConnect->setStyleSheet(stylesheet_Widget);
-            status_Append_Text("- " + serialPort->portName() + " is connected");
+            status_Append_Text("- " + sport_Thread.port_Name() + " is connected");
             timerSerialPort->stop();
-            load_All_Params();
+            //load_All_Params();
         }
     }
     else
@@ -300,13 +289,13 @@ void MainWindow::on_btnConnect_clicked()
             QPushButton:hover:!pressed { background-color: #27598b; } \
             ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
         ui->btnConnect->setStyleSheet(stylesheet_Widget);
-        serialPort->close();
-        status_Append_Text("- " + serialPort->portName() + " is disconnected");
+        sport_Thread.disconnect_Port();
+        status_Append_Text("- " + sport_Thread.port_Name() + " is disconnected");
         timerSerialPort->start(1000);
     }
 }
 
-void MainWindow::on_timerSerialPort_timeout()
+void MainWindow::timerSerialPort_timeout()
 {
     list_Serial_Port.clear();
 
@@ -328,24 +317,6 @@ void MainWindow::on_timerSerialPort_timeout()
         {
             ui->cboSerialPort->removeItem(i);
         }
-    }
-}
-
-void MainWindow::on_serialPort_readyRead()
-{
-    int idx_GB, msg_Length;
-    QByteArray received_Msg;
-
-    data_Serial_Port.append(serialPort->readAll());
-    idx_GB = data_Serial_Port.indexOf("GB");
-    if (idx_GB == -1) return;
-    data_Serial_Port.remove(0, idx_GB);
-    msg_Length = data_Serial_Port[5] + 6;
-    if (data_Serial_Port.size() >= msg_Length)
-    {
-        received_Msg = data_Serial_Port.left(msg_Length);
-        data_Serial_Port.remove(0, msg_Length);
-        parse_Msg(received_Msg);
     }
 }
 
@@ -389,152 +360,28 @@ bool MainWindow::send_Command(char msgID, const QByteArray &payload)
     return serialPort_write(data_Array);
 }
 
-bool MainWindow::parse_Msg(const QByteArray &msg)
+ENUM_SP_STATUS_T MainWindow::send_Command(char msgID, const QByteArray &payload,int wait_Timeout)
 {
-    QString show_Res_Msg;
-    quint16 checksum = 0, checksum_Mask = 0;
-    int cur_Value = 0;
-
-    /* Check DstID */
-    if (msg.size() < 2) return false;
-    if (msg.at(2) != 0x01) return false;
-
-    /* Checksum */
-    checksum_Mask = (msg.at(msg.size() - 2) << 8) & 0x0ff00;
-    checksum_Mask += msg.at(msg.size() - 1) & 0x0ff;
-    for (int i = 0; i < (msg.size() - 2); i++)
-    {
-        checksum += static_cast<unsigned char>(msg.at(i));
-    }
-    checksum = ~checksum;
-    if (checksum_Mask != checksum) return false;
-
-    /* Handle Respond Set Message */
-    show_Res_Msg.clear();
-    if (msg.size() < 6) return false;
-    switch (msg.at(6))
-    {
-    case 0x01:
-        show_Res_Msg.append("- Receive: Set Home ");
-        break;
-    case 0x02:
-        show_Res_Msg.append("- Receive: Set Stop ");
-        break;
-    case 0x03:
-        show_Res_Msg.append("- Receive: Set Emergency Stop ");
-        break;
-    case 0x04:
-        show_Res_Msg.append("- Receive: Set Mode ");
-        break;
-    case 0x05:
-        show_Res_Msg.append("- Receive: Set Pos ");
-        break;
-    case 0x06:
-        show_Res_Msg.append("- Receive: Set Vel ");
-        break;
-    case 0x07:
-        show_Res_Msg.append("- Receive: Set Pos Vel ");
-        break;
-    case 0x09:
-        show_Res_Msg.append("- Receive: Set Kp ");
-        break;
-    case 0x0a:
-        show_Res_Msg.append("- Receive: Set Ki ");
-        break;
-    case 0x0b:
-        show_Res_Msg.append("- Receive: Set Kd ");
-        break;
-    case 0x0c:
-        show_Res_Msg.append("- Receive: Set Kff1 ");
-        break;
-    case 0x0d:
-        show_Res_Msg.append("- Receive: Set Kff2 ");
-        break;
-    }
-
-    if (show_Res_Msg.isEmpty() == false)
-    {
-        if (msg.size() < 8) return false;
-        if (msg.at(7) == 0x01) show_Res_Msg.append("AZ ");
-        else if (msg.at(7) == 0x02) show_Res_Msg.append("EL ");
-        else if (msg.at(7) == 0x03) show_Res_Msg.append("Both ");
-
-        if (msg.at(8) == 0x00) show_Res_Msg.append("Ok");
-        else if (msg.at(8) == 0x01) show_Res_Msg.append("Error");
-
-        status_Append_Text(show_Res_Msg);
-        return true;
-    }
-
-    /* Handle Respond Get Message */
-    switch (msg.at(6))
-    {
-    case 0x08:
-        if (msg.size() < 11) return false;
-        cur_Value = (msg.at(8) << 24) & 0x0ff000000;
-        cur_Value += (msg.at(9) << 16) & 0x0ff0000;
-        cur_Value += (msg.at(10) << 8) & 0x0ff00;
-        cur_Value += msg.at(11) & 0x0ff;
-
-        show_Res_Msg.append("- Receive: Get Pos ");
-
-        if (msg.at(7) == 0x01)
-        {
-            show_Res_Msg.append("AZ ");
-            //ui->ledAZPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
-        }
-        else if (msg.at(7) == 0x02)
-        {
-            show_Res_Msg.append("EL ");
-            //ui->ledELPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
-        }
-
-        show_Res_Msg.append("Done");
-        break;
-    case 0x0e:
-        if (msg.size() < 27) return false;
-        cur_Value = (msg.at(8) << 24) & 0x0ff000000;
-        cur_Value += (msg.at(9) << 16) & 0x0ff0000;
-        cur_Value += (msg.at(10) << 8) & 0x0ff00;
-        cur_Value += msg.at(11) & 0x0ff;
-        //ui->ledKp->setText(QString::number((double)curValue / 1000000.0, 'g', 6));
-
-        cur_Value = (msg.at(12) << 24) & 0x0ff000000;
-        cur_Value += (msg.at(13) << 16) & 0x0ff0000;
-        cur_Value += (msg.at(14) << 8) & 0x0ff00;
-        cur_Value += msg.at(15) & 0x0ff;
-        //ui->ledKi->setText(QString::number((double)curValue / 1000000.0, 'g', 6));
-
-        cur_Value = (msg.at(16) << 24) & 0x0ff000000;
-        cur_Value += (msg.at(17) << 16) & 0x0ff0000;
-        cur_Value += (msg.at(18) << 8) & 0x0ff00;
-        cur_Value += msg.at(19) & 0x0ff;
-        //ui->ledKd->setText(QString::number((double)curValue / 1000000.0, 'g', 6));
-
-        cur_Value = (msg.at(20) << 24) & 0x0ff000000;
-        cur_Value += (msg.at(21) << 16) & 0x0ff0000;
-        cur_Value += (msg.at(22) << 8) & 0x0ff00;
-        cur_Value += msg.at(23) & 0x0ff;
-        //ui->ledKff1->setText(QString::number((double)curValue / 1000000.0, 'g', 6));
-
-        cur_Value = (msg.at(24) << 24) & 0x0ff000000;
-        cur_Value += (msg.at(25) << 16) & 0x0ff0000;
-        cur_Value += (msg.at(26) << 8) & 0x0ff00;
-        cur_Value += msg.at(27) & 0x0ff;
-        //ui->ledKff2->setText(QString::number((double)curValue / 1000000.0, 'g', 6));
-
-        show_Res_Msg.append("- Receive: Get Params Done ");
-        break;
-    }
-    status_Append_Text(show_Res_Msg);
-    return true;
+    return sport_Thread.send_Command_Blocking(msgID, payload, wait_Timeout);
 }
 
 /* Load All Params */
 bool MainWindow::load_All_Params()
 {
-    /* Load PID Params */
+    QByteArray data_Array;
 
+    /* Load PID Params */
+    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
+    {
+        for (int idx_PID_Name = 0; idx_PID_Name < 5; idx_PID_Name++)
+        {
+            data_Array.clear();
+            data_Array.append((char)(1 + idx_Axis));
+            data_Array.append((char)(1 + idx_PID_Name));
+
+            send_Command(0x0e, data_Array);
+        }
+    }
     /* Load Mode */
 
     /* Load Active Axis */
@@ -550,7 +397,7 @@ void MainWindow::status_Append_Text(const QString &text)
 }
 
 /* Mode Button Signals */
-void MainWindow::on_btnModeControl_clicked(const QString &cmd)
+void MainWindow::btnMode_clicked(const QString &cmd)
 {
     QByteArray data_Array;
     char msgID;
@@ -587,14 +434,19 @@ void MainWindow::on_btnModeControl_clicked(const QString &cmd)
         data_Array.append((char)0x01);
     }
 
-    if (send_Command(msgID, data_Array) == true)
-        status_Append_Text("- Send: Set " + cmd);
-    else
-        status_Append_Text("- No Serial Port is connected");
+//    if (send_Command(msgID, data_Array, 1) == true)
+//        status_Append_Text("- Send: Set " + cmd);
+//    else
+//        status_Append_Text("- No Serial Port is connected");
+
+    if (sport_Thread.send_Command_Blocking(msgID, data_Array, 2000) != SP_STATUS_ACK_OK)
+    {
+        ui->btnHome->setChecked(true);
+    }
 }
 
 /* PID LineEdit & Write Button Signals */
-void MainWindow::on_leditPID_editingFinished(const QString &pid_Name)
+void MainWindow::leditPID_editingFinished(const QString &pid_Name)
 {
     QLineEdit *ledit_Sender;
     int idx_Axis, idx_PID_Name, idx_Kx;

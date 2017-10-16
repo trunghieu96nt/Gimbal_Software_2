@@ -11,6 +11,9 @@
 #include <QString>
 #include <QDesktopWidget>
 #include <QSignalMapper>
+#include <QQueue>
+
+#include "serialportthread.h"
 
 namespace Ui {
 class MainWindow;
@@ -31,50 +34,40 @@ private slots:
 
     /* Serial COM Port */
     void on_btnConnect_clicked();
-    void on_timerSerialPort_timeout();
-    void on_serialPort_readyRead();
+    void timerSerialPort_timeout();
 
     /* Mode Button */
-    void on_btnModeControl_clicked(const QString &cmd_Data);
+    void btnMode_clicked(const QString &cmd_Data);
 
     /* PID LineEdit */
-    void on_leditPID_editingFinished(const QString &pid_Name);
-
+    void leditPID_editingFinished(const QString &pid_Name);
     void on_btnWritePositionLoop_clicked();
-
     void on_btnWriteVelocityLoop_clicked();
-
     void on_btnWriteCurrentLoop_clicked();
 
     void on_btnAZSetPos_clicked();
-
     void on_btnAZSetVel_clicked();
-
     void on_btnAZSetBoth_clicked();
-
     void on_btnAZGetPos_clicked();
-
     void on_btnELSetPos_clicked();
-
     void on_btnELSetVel_clicked();
-
     void on_btnELSetBoth_clicked();
-
     void on_btnELGetPos_clicked();
 
     void on_btnAZActive_clicked(bool checked);
-
     void on_btnELActive_clicked(bool checked);
 
 private:
     Ui::MainWindow *ui;
 
+    SerialPortThread sport_Thread;
     QSerialPort *serialPort = new QSerialPort;
     QTimer *timerSerialPort;
     QStringList list_Serial_Port;
-    QByteArray data_Serial_Port;
 
     double width_Factor, height_Factor;
+
+    QSignalMapper *mode_Mapper = new QSignalMapper(this);
 
     QString setted_PID_Value[2][5][5];
     bool changed_PID_LineEdit[2][5][5];
@@ -88,6 +81,7 @@ private:
     bool load_All_Params();
     bool serialPort_write(const QByteArray &data);
     bool send_Command(char msgID, const QByteArray &payload);
+    ENUM_SP_STATUS_T send_Command(char msgID, const QByteArray &payload,int wait_Timeout);
     bool parse_Msg(const QByteArray &msg);
     void status_Append_Text(const QString &text);
 };
