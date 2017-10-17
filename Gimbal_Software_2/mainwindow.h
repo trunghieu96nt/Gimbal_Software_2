@@ -35,7 +35,7 @@ private slots:
     /* Serial COM Port */
     void on_btnConnect_clicked();
     void timerSerialPort_timeout();
-    void serial_port_done(ENUM_SP_STATUS_T status, QByteArray respond);
+    void serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &respond);
 
     /* Mode Button */
     void btnMode_clicked(const QString &cmd_Data);
@@ -62,7 +62,6 @@ private:
     Ui::MainWindow *ui;
 
     SerialPort serial_Port;
-    QSerialPort *serialPort = new QSerialPort;
     QTimer *timerSerialPort;
     QStringList list_Serial_Port;
 
@@ -74,6 +73,8 @@ private:
     QString setted_PID_Value[2][5][5];
     bool changed_PID_LineEdit[2][5][5];
 
+    bool setted_Active_Value[2] = {false, false};
+
     void init_GUI();
     void init_Page();
     void init_Serial_Port();
@@ -81,10 +82,6 @@ private:
     void init_PID_LineEdit_Mapping();
 
     bool load_All_Params();
-    bool serialPort_write(const QByteArray &data);
-    bool send_Command(char msgID, const QByteArray &payload);
-    ENUM_SP_STATUS_T send_Command(char msgID, const QByteArray &payload,int wait_Timeout);
-    bool parse_Msg(const QByteArray &msg);
     void status_Append_Text(const QString &text);
     void status_Append_Text(const QString &text, QColor color);
 };

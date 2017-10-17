@@ -34,7 +34,7 @@ public:
     void send_Cmd_Non_Blocking(char msgID, const QByteArray &payload);
 
 signals:
-    void done(ENUM_SP_STATUS_T status, const QByteArray &response);
+    void done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &response);
 
 private slots:
     void timer_Send_Timeout();

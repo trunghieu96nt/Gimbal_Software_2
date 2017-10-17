@@ -600,8 +600,8 @@ QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; back
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1189</width>
-             <height>714</height>
+             <width>1918</width>
+             <height>996</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_25" rowstretch="0,0,0" columnstretch="0,0,0">

@@ -41,7 +41,7 @@ void SerialPort::transaction(const QByteArray &request)
         this->current_Request = this->request_Queue.dequeue();
         if (serial.isOpen() == false)
         {
-            emit this->done(SP_STATUS_NO_CONNECT, this->current_Request);
+            emit this->done(SP_STATUS_NO_CONNECT, this->current_Request, NULL);
             this->current_Request.clear();
             this->request_Queue.clear();
         }
@@ -54,7 +54,7 @@ void SerialPort::transaction(const QByteArray &request)
             }
             else
             {
-                emit this->done(SP_STATUS_TIMEOUT_WR, this->current_Request);
+                emit this->done(SP_STATUS_TIMEOUT_WR, this->current_Request, NULL);
                 this->current_Request.clear();
                 this->request_Queue.clear();
             }
@@ -69,7 +69,7 @@ void SerialPort::transaction_in_queue()
         this->current_Request = this->request_Queue.dequeue();
         if (serial.isOpen() == false)
         {
-            emit this->done(SP_STATUS_NO_CONNECT, this->current_Request);
+            emit this->done(SP_STATUS_NO_CONNECT, this->current_Request, NULL);
             this->current_Request.clear();
             this->request_Queue.clear();
         }
@@ -82,7 +82,7 @@ void SerialPort::transaction_in_queue()
             }
             else
             {
-                emit this->done(SP_STATUS_TIMEOUT_WR, this->current_Request);
+                emit this->done(SP_STATUS_TIMEOUT_WR, this->current_Request, NULL);
                 this->current_Request.clear();
                 this->request_Queue.clear();
             }
@@ -92,7 +92,7 @@ void SerialPort::transaction_in_queue()
 
 void SerialPort::timer_Send_Timeout()
 {
-    emit this->done(SP_STATUS_TIMEOUT_RD, this->current_Request);
+    emit this->done(SP_STATUS_TIMEOUT_RD, this->current_Request, NULL);
     this->current_Request.clear();
     this->transaction_in_queue();
 }
@@ -114,7 +114,7 @@ void SerialPort::serial_readyRead()
     msg_Length = data_Serial_Port.at(5) + 6;
 
     /* wait size until greater than msg_Length */
-    if (data_Serial_Port.size() >= msg_Length) return;
+    if (data_Serial_Port.size() < msg_Length) return;
 
     /* get respond */
     respond = data_Serial_Port.left(msg_Length);
@@ -126,7 +126,7 @@ void SerialPort::serial_readyRead()
     timer_Send.stop();
     if (respond.size() < 10)
     {
-        emit this->done(SP_STATUS_RESPOND_ERR, this->current_Request);
+        emit this->done(SP_STATUS_RESPOND_ERR, this->current_Request, NULL);
         this->current_Request.clear();
     }
     else
@@ -140,14 +140,15 @@ void SerialPort::serial_readyRead()
         }
         checksum = ~checksum;
 
-        if ((checksum_Mask != checksum) || (respond.at(2) != 0x01) || (respond.at(6) != this->current_Request.at(6)))
+        if ((checksum_Mask != checksum) || (respond.at(2) != 0x01) ||
+                (respond.at(6) != this->current_Request.at(6)) || (respond.at(7) != this->current_Request.at(7)))
         {
-            emit this->done(SP_STATUS_RESPOND_ERR, this->current_Request);
+            emit this->done(SP_STATUS_RESPOND_ERR, this->current_Request, NULL);
             this->current_Request.clear();
         }
         else
         {
-            emit this->done(SP_STATUS_RESPOND_OK, respond);
+            emit this->done(SP_STATUS_RESPOND_OK, this->current_Request, respond);
             this->current_Request.clear();
         }
     }

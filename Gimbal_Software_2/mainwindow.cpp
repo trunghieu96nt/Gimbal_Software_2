@@ -153,7 +153,7 @@ void MainWindow::init_Serial_Port()
 {
     /* combo box baudrate Serial Port */
     ui->cboBaudrate->setCurrentText("115200");
-    connect(&serial_Port, SIGNAL(done(ENUM_SP_STATUS_T,QByteArray)), this, SLOT(serial_port_done(ENUM_SP_STATUS_T,QByteArray)));
+    connect(&serial_Port, SIGNAL(done(ENUM_SP_STATUS_T,QByteArray,QByteArray)), this, SLOT(serial_port_done(ENUM_SP_STATUS_T,QByteArray,QByteArray)));
 
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
@@ -324,52 +324,167 @@ void MainWindow::timerSerialPort_timeout()
     }
 }
 
-void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, QByteArray respond)
+void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &respond)
 {
+    unsigned char msgID = static_cast<unsigned char>(request.at(6));
+
     if (status == SP_STATUS_NO_CONNECT)
     {
-        status_Append_Text("- No Serial Port is connected");
+        status_Append_Text("- No Serial Port is connected", Qt::red);
+        return;
     }
-    else if (status == SP_STATUS_TIMEOUT_RD)
+
+    if ((msgID >= 0x01) && (msgID <= 0x04)) //set mode
     {
-        status_Append_Text("- Timeout read", Qt::red);
+        QPushButton *button;
+        QString cmd;
+
+        switch (msgID)
+        {
+        case 0x01:
+            cmd = "HOME";
+            break;
+        case 0x02:
+            cmd = "STOP";
+            break;
+        case 0x03:
+            cmd = "EMERGENCY_STOP";
+            break;
+        case 0x04:
+            if (request.at(8) == 0x00)
+                cmd = "MANUAL";
+            else if (request.at(8) == 0x02)
+                cmd = "POINTING";
+            else
+                cmd = "TRACKING";
+            break;
+        default:
+            break;
+        }
+
+        if (status != SP_STATUS_RESPOND_OK)
+        {
+            /* back to setted mode */
+            button = qobject_cast<QPushButton *>(mode_Mapper->mapping(setted_Mode));
+            if (button != NULL) button->setChecked(true);
+            status_Append_Text("- Fail to Set Mode: " + cmd, Qt::red);
+        }
+        else //if (status == SP_STATUS_ACK_OK)
+        {
+            if (respond.at(8) == 0x00)
+            {
+                setted_Mode = cmd;
+                status_Append_Text("- Receive: Set Mode " + cmd + " Done", Qt::darkGreen);
+            }
+            else
+            {
+                /* back to setted mode */
+                button = qobject_cast<QPushButton *>(mode_Mapper->mapping(setted_Mode));
+                if (button != NULL) button->setChecked(true);
+                status_Append_Text("- Fail to Set Mode: " + cmd, Qt::red);
+            }
+        }
     }
-}
-
-/* Serial Port functions */
-bool MainWindow::send_Command(char msgID, const QByteArray &payload)
-{
-    QByteArray data_Array;
-    quint16 checkSum = 0;
-
-    /* Header */
-    data_Array.append(QByteArray::fromRawData("\x47\x42\x02\x01\x00", 5));
-
-    /* Length */
-    data_Array.append((char)(1 + payload.count() + 2));
-
-    /* MsgID */
-    data_Array.append(msgID);
-
-    /* Payload */
-    data_Array.append(payload);
-
-    /* Check Sum */
-    for (int i = 0; i < data_Array.count(); i++)
+    else if (msgID == 0x05) //get mode
     {
-        checkSum += static_cast<unsigned char>(data_Array.at(i));
-    }
-    checkSum = ~checkSum;
-    data_Array.append((char)((checkSum >> 8) & 0x0ff));
-    data_Array.append((char)(checkSum & 0x0ff));
-    return true;
-}
 
-ENUM_SP_STATUS_T MainWindow::send_Command(char msgID, const QByteArray &payload,int wait_Timeout)
-{
-    serial_Port.send_Cmd_Non_Blocking(msgID, payload);
-    return SP_STATUS_ACK_OK;
-    //return sport_Thread.send_Cmd_Blocking(msgID, payload, wait_Timeout);
+    }
+    else if ((msgID >= 0x06) && (msgID <= 0x08)) // set pos & vel
+    {
+        QString message_status;
+
+        if (request.at(7) == 0x01) message_status = "AZ";
+        else if (request.at(7) == 0x02) message_status = "EL";
+        else message_status = "AZ & EL";
+
+        if (msgID == 0x06) message_status.append(" Pos");
+        else if (msgID == 0x07) message_status.append(" Vel");
+        else if (msgID == 0x08) message_status.append(" Pos & Vel");
+
+        if (status != SP_STATUS_RESPOND_OK)
+        {
+            status_Append_Text("- Fail to Set: " + message_status, Qt::red);
+        }
+        else //if (status == SP_STATUS_ACK_OK)
+        {
+            if (respond.at(8) == 0x00)
+                status_Append_Text("- Receive: Set " + message_status + " Done", Qt::darkGreen);
+            else
+                status_Append_Text("- Fail to Set: " + message_status, Qt::red);
+        }
+    }
+    else if (msgID == 0x09) //get pos
+    {
+        QString message_status;
+
+        if (request.at(7) == 0x01) message_status = "AZ";
+        else if (request.at(7) == 0x02) message_status = "EL";
+        else message_status = "AZ & EL";
+
+        if ((status != SP_STATUS_RESPOND_OK) || (respond.size() < 12))
+        {
+            status_Append_Text("- Fail to Get: " + message_status + " Pos", Qt::red);
+        }
+        else //if (status == SP_STATUS_ACK_OK)
+        {
+            int curValue = 0;
+
+            curValue = (respond.at(8) << 24) & 0x0ff000000;
+            curValue += (respond.at(9) << 16) & 0x0ff0000;
+            curValue += (respond.at(10) << 8) & 0x0ff00;
+            curValue += respond.at(11) & 0x0ff;
+
+            if (respond.at(7) == 0x01)
+                ui->leditAZPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
+            else if (respond.at(7) == 0x02)
+                ui->leditELPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
+
+            status_Append_Text("- Receive: Get " + message_status + " Pos Done" , Qt::darkGreen);
+
+        }
+    }
+    else if (msgID == 0x10) //set active axis
+    {
+        QString message_status;
+        bool *p_Status_Memory;
+        QPushButton *button;
+
+        if (request.at(7) == 0x01)
+        {
+            button = ui->btnAZActive;
+            message_status = "AZ";
+            p_Status_Memory = &setted_Active_Value[0];
+        }
+        else //if (request.at(7) == 0x02)
+        {
+            button = ui->btnELActive;
+            message_status = "EL";
+            p_Status_Memory = &setted_Active_Value[1];
+        }
+
+        if (request.at(8) == 0x00) message_status.append(" Disable");
+        else if (request.at(8) == 0x01) message_status.append(" Enable");
+
+        if (status != SP_STATUS_RESPOND_OK)
+        {
+            button->setChecked(*p_Status_Memory);
+            status_Append_Text("- Fail to Set: " + message_status, Qt::red);
+        }
+        else //if (status == SP_STATUS_ACK_OK)
+        {
+            if (respond.at(8) == 0x00)
+            {
+                *p_Status_Memory = request.at(8);
+                status_Append_Text("- Receive: Set " + message_status + " Done", Qt::darkGreen);
+            }
+            else
+            {
+                button->setChecked(*p_Status_Memory);
+                status_Append_Text("- Fail to Set: " + message_status, Qt::red);
+            }
+        }
+    }
+
 }
 
 /* Load All Params */
@@ -386,7 +501,7 @@ bool MainWindow::load_All_Params()
             data_Array.append((char)(1 + idx_Axis));
             data_Array.append((char)(1 + idx_PID_Name));
 
-            send_Command(0x0e, data_Array);
+
         }
     }
     /* Load Mode */
@@ -422,11 +537,9 @@ void MainWindow::status_Append_Text(const QString &text, QColor color)
     ui->ptxtStatus_1->setCurrentCharFormat(tf);
 }
 
-/* Mode Button Signals */
+/* Mode Button */
 void MainWindow::btnMode_clicked(const QString &cmd)
 {
-    ENUM_SP_STATUS_T status;
-    QPushButton *button;
     QByteArray data_Array;
     char msgID;
 
@@ -463,36 +576,12 @@ void MainWindow::btnMode_clicked(const QString &cmd)
     }
 
     status_Append_Text("- Send: Set Mode " + cmd);
+
     /* Send */
-    status = send_Command(msgID, data_Array, 2000);
-    if (status == SP_STATUS_NO_CONNECT)
-    {
-        status_Append_Text("- No Serial Port is connected", Qt::red);
-    }
-//    else if (status != SP_STATUS_ACK_OK)
-//    {
-//        if (setted_Mode == "")
-//        {
-//            /* this code has no effect */
-//            button = qobject_cast<QPushButton *>(mode_Mapper->mapping(cmd));
-//            button->setChecked(false);
-//        }
-//        else
-//        {
-//            /* back to setted mode */
-//            button = qobject_cast<QPushButton *>(mode_Mapper->mapping(setted_Mode));
-//            button->setChecked(true);
-//        }
-//        status_Append_Text("- Fail to set mode: " + cmd, Qt::red);
-//    }
-//    else //if (status == SP_STATUS_ACK_OK)
-//    {
-//        setted_Mode = cmd;
-//        status_Append_Text("- Receive: Set Mode " + cmd, Qt::darkGreen);
-//    }
+    serial_Port.send_Cmd_Non_Blocking(msgID, data_Array);
 }
 
-/* PID LineEdit & Write Button Signals */
+/* PID LineEdit & Write Button */
 void MainWindow::leditPID_editingFinished(const QString &pid_Name)
 {
     QLineEdit *ledit_Sender;
@@ -565,7 +654,7 @@ void MainWindow::on_btnWritePositionLoop_clicked()
                     data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
                     data_Array.append((char)((scaled_Value) & 0x0ff));
 
-                    if (send_Command(0x09 + idx_Kx, data_Array) == true)
+                    //if (send_Command(0x09 + idx_Kx, data_Array) == true)
                     {
                         if (first_Send_Flag == false)
                         {
@@ -573,7 +662,7 @@ void MainWindow::on_btnWritePositionLoop_clicked()
                             status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
                         }
                     }
-                    else
+                    //else
                     {
                         status_Append_Text("- No Serial Port is connected");
                         break;
@@ -618,7 +707,7 @@ void MainWindow::on_btnWriteVelocityLoop_clicked()
                     data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
                     data_Array.append((char)((scaled_Value) & 0x0ff));
 
-                    if (send_Command(0x09 + idx_Kx, data_Array) == true)
+                    //if (send_Command(0x09 + idx_Kx, data_Array) == true)
                     {
                         if (first_Send_Flag == false)
                         {
@@ -626,7 +715,7 @@ void MainWindow::on_btnWriteVelocityLoop_clicked()
                             status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
                         }
                     }
-                    else
+                    //else
                     {
                         status_Append_Text("- No Serial Port is connected");
                         break;
@@ -671,7 +760,7 @@ void MainWindow::on_btnWriteCurrentLoop_clicked()
                     data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
                     data_Array.append((char)((scaled_Value) & 0x0ff));
 
-                    if (send_Command(0x09 + idx_Kx, data_Array) == true)
+                    //if (send_Command(0x09 + idx_Kx, data_Array) == true)
                     {
                         if (first_Send_Flag == false)
                         {
@@ -679,7 +768,7 @@ void MainWindow::on_btnWriteCurrentLoop_clicked()
                             status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
                         }
                     }
-                    else
+                    //else
                     {
                         status_Append_Text("- No Serial Port is connected");
                         break;
@@ -718,14 +807,8 @@ void MainWindow::on_btnAZSetPos_clicked()
             data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
             data_Array.append((char)((scaled_Value) & 0x0ff));
 
-            if (send_Command(0x05, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set AZ Pos");
-            }
-            else
-            {
-                status_Append_Text("- No Serial Port is connected");
-            }
+            status_Append_Text("- Send: Set AZ Pos");
+            serial_Port.send_Cmd_Non_Blocking(0x06, data_Array);
         }
     }
 }
@@ -756,14 +839,9 @@ void MainWindow::on_btnAZSetVel_clicked()
             data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
             data_Array.append((char)((scaled_Value) & 0x0ff));
 
-            if (send_Command(0x06, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set AZ Vel");
-            }
-            else
-            {
-                status_Append_Text("- No Serial Port is connected");
-            }
+            status_Append_Text("- Send: Set AZ Vel");
+            serial_Port.send_Cmd_Non_Blocking(0x07, data_Array);
+
         }
     }
 }
@@ -808,14 +886,8 @@ void MainWindow::on_btnAZSetBoth_clicked()
         data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
         data_Array.append((char)((scaled_Value) & 0x0ff));
 
-        if (send_Command(0x07, data_Array) == true)
-        {
-            status_Append_Text("- Send: Set AZ Pos Vel");
-        }
-        else
-        {
-            status_Append_Text("- No Serial Port is connected");
-        }
+        status_Append_Text("- Send: Set AZ Pos Vel");
+        serial_Port.send_Cmd_Non_Blocking(0x08, data_Array);
     }
 }
 
@@ -825,14 +897,8 @@ void MainWindow::on_btnAZGetPos_clicked()
 
     data_Array.clear();
     data_Array.append((char)0x01);
-    if (send_Command(0x08, data_Array) == true)
-    {
-        status_Append_Text("- Send: Get AZ Pos");
-    }
-    else
-    {
-        status_Append_Text("- No Serial Port is connected");
-    }
+    status_Append_Text("- Send: Get AZ Pos");
+    serial_Port.send_Cmd_Non_Blocking(0x09, data_Array);
 }
 
 void MainWindow::on_btnELSetPos_clicked()
@@ -861,14 +927,8 @@ void MainWindow::on_btnELSetPos_clicked()
             data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
             data_Array.append((char)((scaled_Value) & 0x0ff));
 
-            if (send_Command(0x05, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set EL Pos");
-            }
-            else
-            {
-                status_Append_Text("- No Serial Port is connected");
-            }
+            status_Append_Text("- Send: Set EL Pos");
+            serial_Port.send_Cmd_Non_Blocking(0x06, data_Array);
         }
     }
 }
@@ -899,14 +959,8 @@ void MainWindow::on_btnELSetVel_clicked()
             data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
             data_Array.append((char)((scaled_Value) & 0x0ff));
 
-            if (send_Command(0x06, data_Array) == true)
-            {
-                status_Append_Text("- Send: Set EL Vel");
-            }
-            else
-            {
-                status_Append_Text("- No Serial Port is connected");
-            }
+            status_Append_Text("- Send: Set EL Vel");
+            serial_Port.send_Cmd_Non_Blocking(0x07, data_Array);
         }
     }
 }
@@ -951,14 +1005,8 @@ void MainWindow::on_btnELSetBoth_clicked()
         data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
         data_Array.append((char)((scaled_Value) & 0x0ff));
 
-        if (send_Command(0x07, data_Array) == true)
-        {
-            status_Append_Text("- Send: Set EL Pos Vel");
-        }
-        else
-        {
-            status_Append_Text("- No Serial Port is connected");
-        }
+        status_Append_Text("- Send: Set EL Pos Vel");
+        serial_Port.send_Cmd_Non_Blocking(0x08, data_Array);
     }
 }
 
@@ -968,37 +1016,55 @@ void MainWindow::on_btnELGetPos_clicked()
 
     data_Array.clear();
     data_Array.append((char)0x02);
-    if (send_Command(0x08, data_Array) == true)
-    {
-        status_Append_Text("- Send: Get EL Pos");
-    }
-    else
-    {
-        status_Append_Text("- No Serial Port is connected");
-    }
+    status_Append_Text("- Send: Get EL Pos");
+    serial_Port.send_Cmd_Non_Blocking(0x09, data_Array);
 }
 
 /* Active Axis */
 void MainWindow::on_btnAZActive_clicked(bool checked)
 {
+    QByteArray data_Array;
+    QString message_status;
+
+    data_Array.clear();
+    data_Array.append((char)0x01); //Axis AZ
+
+
     if (checked == true)
     {
-
+        message_status = "- Send: Set AZ Enable";
+        data_Array.append((char)0x01); //enable
     }
     else
     {
-
+        message_status = "- Send: Set AZ Disable";
+        data_Array.append((char)0x00); //disable
     }
+
+    status_Append_Text(message_status);
+    serial_Port.send_Cmd_Non_Blocking(0x10, data_Array);
 }
 
 void MainWindow::on_btnELActive_clicked(bool checked)
 {
+    QByteArray data_Array;
+    QString message_status;
+
+    data_Array.clear();
+    data_Array.append((char)0x02); //Axis EL
+
+
     if (checked == true)
     {
-
+        message_status = "- Send: Set EL Enable";
+        data_Array.append((char)0x01); //enable
     }
     else
     {
-
+        message_status = "- Send: Set EL Disable";
+        data_Array.append((char)0x00); //disable
     }
+
+    status_Append_Text(message_status);
+    serial_Port.send_Cmd_Non_Blocking(0x10, data_Array);
 }
