@@ -153,6 +153,7 @@ void MainWindow::init_Serial_Port()
 {
     /* combo box baudrate Serial Port */
     ui->cboBaudrate->setCurrentText("115200");
+    connect(&serial_Port, SIGNAL(done(ENUM_SP_STATUS_T,QByteArray)), this, SLOT(serial_port_done(ENUM_SP_STATUS_T,QByteArray)));
 
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
@@ -169,6 +170,9 @@ void MainWindow::init_Serial_Port()
 
 void MainWindow::init_Mode_Button_Mapping()
 {
+    /* Defaut value */
+    setted_Mode = "";
+
     /* Mode Button */
     mode_Mapper->setMapping(ui->btnHome, "HOME");
     mode_Mapper->setMapping(ui->btnStop, "STOP");
@@ -265,7 +269,7 @@ void MainWindow::on_btnConnect_clicked()
 
     if (ui->btnConnect->text() == "Connect")
     {
-        if (sport_Thread.connect_Port(ui->cboSerialPort->currentText(),
+        if (serial_Port.connect_Port(ui->cboSerialPort->currentText(),
                                       ui->cboBaudrate->currentText().toInt(NULL, 10)) == true)
         {
             ui->btnConnect->setText("Disconnect");
@@ -275,7 +279,7 @@ void MainWindow::on_btnConnect_clicked()
                 QPushButton:hover:!pressed { background-color: #8b4c27; } \
                 ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
             ui->btnConnect->setStyleSheet(stylesheet_Widget);
-            status_Append_Text("- " + sport_Thread.port_Name() + " is connected");
+            status_Append_Text("- " + serial_Port.port_Name() + " is connected");
             timerSerialPort->stop();
             //load_All_Params();
         }
@@ -289,8 +293,8 @@ void MainWindow::on_btnConnect_clicked()
             QPushButton:hover:!pressed { background-color: #27598b; } \
             ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
         ui->btnConnect->setStyleSheet(stylesheet_Widget);
-        sport_Thread.disconnect_Port();
-        status_Append_Text("- " + sport_Thread.port_Name() + " is disconnected");
+        serial_Port.disconnect_Port();
+        status_Append_Text("- " + serial_Port.port_Name() + " is disconnected");
         timerSerialPort->start(1000);
     }
 }
@@ -320,17 +324,19 @@ void MainWindow::timerSerialPort_timeout()
     }
 }
 
-/* Serial Port functions */
-bool MainWindow::serialPort_write(const QByteArray &data)
+void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, QByteArray respond)
 {
-    if (serialPort->isOpen() == true)
+    if (status == SP_STATUS_NO_CONNECT)
     {
-        serialPort->write(data);
-        return true;
+        status_Append_Text("- No Serial Port is connected");
     }
-    return false;
+    else if (status == SP_STATUS_TIMEOUT_RD)
+    {
+        status_Append_Text("- Timeout read", Qt::red);
+    }
 }
 
+/* Serial Port functions */
 bool MainWindow::send_Command(char msgID, const QByteArray &payload)
 {
     QByteArray data_Array;
@@ -356,13 +362,14 @@ bool MainWindow::send_Command(char msgID, const QByteArray &payload)
     checkSum = ~checkSum;
     data_Array.append((char)((checkSum >> 8) & 0x0ff));
     data_Array.append((char)(checkSum & 0x0ff));
-
-    return serialPort_write(data_Array);
+    return true;
 }
 
 ENUM_SP_STATUS_T MainWindow::send_Command(char msgID, const QByteArray &payload,int wait_Timeout)
 {
-    return sport_Thread.send_Command_Blocking(msgID, payload, wait_Timeout);
+    serial_Port.send_Cmd_Non_Blocking(msgID, payload);
+    return SP_STATUS_ACK_OK;
+    //return sport_Thread.send_Cmd_Blocking(msgID, payload, wait_Timeout);
 }
 
 /* Load All Params */
@@ -396,9 +403,30 @@ void MainWindow::status_Append_Text(const QString &text)
     ui->ptxtStatus_1->appendPlainText(text);
 }
 
+void MainWindow::status_Append_Text(const QString &text, QColor color)
+{
+    QTextCharFormat tf;
+
+    /* change color to desired color */
+    tf.setForeground(QBrush(color));
+    ui->ptxtStatus_0->setCurrentCharFormat(tf);
+    ui->ptxtStatus_1->setCurrentCharFormat(tf);
+
+    /* append text */
+    ui->ptxtStatus_0->appendPlainText(text);
+    ui->ptxtStatus_1->appendPlainText(text);
+
+    /* change color to black */
+    tf.setForeground(QBrush(Qt::black));
+    ui->ptxtStatus_0->setCurrentCharFormat(tf);
+    ui->ptxtStatus_1->setCurrentCharFormat(tf);
+}
+
 /* Mode Button Signals */
 void MainWindow::btnMode_clicked(const QString &cmd)
 {
+    ENUM_SP_STATUS_T status;
+    QPushButton *button;
     QByteArray data_Array;
     char msgID;
 
@@ -434,15 +462,34 @@ void MainWindow::btnMode_clicked(const QString &cmd)
         data_Array.append((char)0x01);
     }
 
-//    if (send_Command(msgID, data_Array, 1) == true)
-//        status_Append_Text("- Send: Set " + cmd);
-//    else
-//        status_Append_Text("- No Serial Port is connected");
-
-    if (sport_Thread.send_Command_Blocking(msgID, data_Array, 2000) != SP_STATUS_ACK_OK)
+    status_Append_Text("- Send: Set Mode " + cmd);
+    /* Send */
+    status = send_Command(msgID, data_Array, 2000);
+    if (status == SP_STATUS_NO_CONNECT)
     {
-        ui->btnHome->setChecked(true);
+        status_Append_Text("- No Serial Port is connected", Qt::red);
     }
+//    else if (status != SP_STATUS_ACK_OK)
+//    {
+//        if (setted_Mode == "")
+//        {
+//            /* this code has no effect */
+//            button = qobject_cast<QPushButton *>(mode_Mapper->mapping(cmd));
+//            button->setChecked(false);
+//        }
+//        else
+//        {
+//            /* back to setted mode */
+//            button = qobject_cast<QPushButton *>(mode_Mapper->mapping(setted_Mode));
+//            button->setChecked(true);
+//        }
+//        status_Append_Text("- Fail to set mode: " + cmd, Qt::red);
+//    }
+//    else //if (status == SP_STATUS_ACK_OK)
+//    {
+//        setted_Mode = cmd;
+//        status_Append_Text("- Receive: Set Mode " + cmd, Qt::darkGreen);
+//    }
 }
 
 /* PID LineEdit & Write Button Signals */

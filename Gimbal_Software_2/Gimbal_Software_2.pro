@@ -26,11 +26,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    serialportthread.cpp
+    serialport.cpp
 
 HEADERS += \
         mainwindow.h \
-    serialportthread.h
+    serialport.h
 
 FORMS += \
         mainwindow.ui
