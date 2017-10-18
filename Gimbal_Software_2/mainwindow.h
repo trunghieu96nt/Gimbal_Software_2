@@ -13,6 +13,7 @@
 #include <QSignalMapper>
 #include <QQueue>
 #include <QMutex>
+#include <QMenu>
 
 #include "serialport.h"
 
@@ -68,6 +69,10 @@ private slots:
     /* Active Axis button */
     void on_btnAZActive_clicked(bool checked);
     void on_btnELActive_clicked(bool checked);
+
+    /* Menu PlainTextEdit */
+    void show_ptxtStatus_Menu(QPoint pt);
+    void ptxtStatus_Clear();
 
 private:
     Ui::MainWindow *ui;
