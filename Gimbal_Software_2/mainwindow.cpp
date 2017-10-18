@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     init_Serial_Port();
     init_Mode_Button_Mapping();
     init_PID_LineEdit_Mapping();
+    init_PID_WR_Button_Mapping();
 }
 
 MainWindow::~MainWindow()
@@ -219,6 +220,7 @@ void MainWindow::init_PID_LineEdit_Mapping()
     QLineEdit *leditPID;
     QDoubleValidator *pid_Validator = new QDoubleValidator(this);
 
+    /* set validator */
     pid_Validator->setDecimals(6);
     pid_Validator->setBottom(0.0);
 
@@ -233,7 +235,6 @@ void MainWindow::init_PID_LineEdit_Mapping()
                /* Set Default Value */
                leditPID->setText("0.0");
                setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = "0.0";
-               changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
 
                /* Set Double Validator */
                leditPID->setValidator(pid_Validator);
@@ -245,6 +246,22 @@ void MainWindow::init_PID_LineEdit_Mapping()
         }
     }
     connect(pid_Mapper, SIGNAL(mapped(const QString &)), SLOT(leditPID_editingFinished(const QString &)));
+}
+
+void MainWindow::init_PID_WR_Button_Mapping()
+{
+    QSignalMapper *pid_WR_Mapper = new QSignalMapper(this);
+
+    /* Mode Button */
+    pid_WR_Mapper->setMapping(ui->btnWritePositionLoop, "POSITION");
+    pid_WR_Mapper->setMapping(ui->btnWriteVelocityLoop, "VELOCITY");
+    pid_WR_Mapper->setMapping(ui->btnWriteCurrentLoop, "CURRENT");
+
+    connect(ui->btnWritePositionLoop, SIGNAL(clicked()), pid_WR_Mapper, SLOT(map()));
+    connect(ui->btnWriteVelocityLoop, SIGNAL(clicked()), pid_WR_Mapper, SLOT(map()));
+    connect(ui->btnWriteCurrentLoop, SIGNAL(clicked()), pid_WR_Mapper, SLOT(map()));
+
+    connect(pid_WR_Mapper, SIGNAL(mapped(const QString &)), SLOT(btnWritePID_clicked(const QString &)));
 }
 
 /* Page Buttons */
@@ -281,7 +298,7 @@ void MainWindow::on_btnConnect_clicked()
             ui->btnConnect->setStyleSheet(stylesheet_Widget);
             status_Append_Text("- " + serial_Port.port_Name() + " is connected");
             timerSerialPort->stop();
-            //load_All_Params();
+            load_All_Params();
         }
     }
     else
@@ -324,7 +341,7 @@ void MainWindow::timerSerialPort_timeout()
     }
 }
 
-void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &respond)
+void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &response)
 {
     unsigned char msgID = static_cast<unsigned char>(request.at(6));
 
@@ -362,7 +379,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             break;
         }
 
-        if (status != SP_STATUS_RESPOND_OK)
+        if (status != SP_STATUS_RESPONSE_OK)
         {
             /* back to setted mode */
             button = qobject_cast<QPushButton *>(mode_Mapper->mapping(setted_Mode));
@@ -371,7 +388,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
-            if (respond.at(8) == 0x00)
+            if (response.at(8) == 0x00)
             {
                 setted_Mode = cmd;
                 status_Append_Text("- Receive: Set Mode " + cmd + " Done", Qt::darkGreen);
@@ -401,13 +418,13 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
         else if (msgID == 0x07) message_status.append(" Vel");
         else if (msgID == 0x08) message_status.append(" Pos & Vel");
 
-        if (status != SP_STATUS_RESPOND_OK)
+        if (status != SP_STATUS_RESPONSE_OK)
         {
             status_Append_Text("- Fail to Set: " + message_status, Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
-            if (respond.at(8) == 0x00)
+            if (response.at(8) == 0x00)
                 status_Append_Text("- Receive: Set " + message_status + " Done", Qt::darkGreen);
             else
                 status_Append_Text("- Fail to Set: " + message_status, Qt::red);
@@ -421,7 +438,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
         else if (request.at(7) == 0x02) message_status = "EL";
         else message_status = "AZ & EL";
 
-        if ((status != SP_STATUS_RESPOND_OK) || (respond.size() < 12))
+        if ((status != SP_STATUS_RESPONSE_OK) || (response.size() < 12))
         {
             status_Append_Text("- Fail to Get: " + message_status + " Pos", Qt::red);
         }
@@ -429,14 +446,14 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
         {
             int curValue = 0;
 
-            curValue = (respond.at(8) << 24) & 0x0ff000000;
-            curValue += (respond.at(9) << 16) & 0x0ff0000;
-            curValue += (respond.at(10) << 8) & 0x0ff00;
-            curValue += respond.at(11) & 0x0ff;
+            curValue = (response.at(8) << 24) & 0x0ff000000;
+            curValue += (response.at(9) << 16) & 0x0ff0000;
+            curValue += (response.at(10) << 8) & 0x0ff00;
+            curValue += response.at(11) & 0x0ff;
 
-            if (respond.at(7) == 0x01)
+            if (response.at(7) == 0x01)
                 ui->leditAZPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
-            else if (respond.at(7) == 0x02)
+            else if (response.at(7) == 0x02)
                 ui->leditELPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
 
             status_Append_Text("- Receive: Get " + message_status + " Pos Done" , Qt::darkGreen);
@@ -465,14 +482,14 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
         if (request.at(8) == 0x00) message_status.append(" Disable");
         else if (request.at(8) == 0x01) message_status.append(" Enable");
 
-        if (status != SP_STATUS_RESPOND_OK)
+        if (status != SP_STATUS_RESPONSE_OK)
         {
             button->setChecked(*p_Status_Memory);
             status_Append_Text("- Fail to Set: " + message_status, Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
-            if (respond.at(8) == 0x00)
+            if (response.at(8) == 0x00)
             {
                 *p_Status_Memory = request.at(8);
                 status_Append_Text("- Receive: Set " + message_status + " Done", Qt::darkGreen);
@@ -490,23 +507,74 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
 /* Load All Params */
 bool MainWindow::load_All_Params()
 {
-    QByteArray data_Array;
+    QByteArray request_Data, response_Data;
+    ENUM_SP_STATUS_T status;
+
+    status_Append_Text("- Send: Get All Params");
+
+    /* Load Mode */
+    request_Data.clear();
+    request_Data.append((char)0x03);
+    status = serial_Port.send_Cmd_Blocking(0x05, request_Data, 2000, response_Data);
+    if (status == SP_STATUS_RESPONSE_OK)
+    {
+        switch (response_Data.at(8))
+        {
+        case 0x01:
+            ui->btnHome->setChecked(true);
+            setted_Mode = "HOME";
+            break;
+        case 0x02:
+            ui->btnStop->setChecked(true);
+            setted_Mode = "STOP";
+            break;
+        case 0x03:
+            setted_Mode = "EMERGENCY_STOP";
+            break;
+        case 0x04:
+            if (response_Data.at(9) == 0)
+            {
+                ui->btnManual->setChecked(true);
+                setted_Mode = "MANUAL";
+            }
+            else if (response_Data.at(9) == 2)
+            {
+                ui->btnPointing->setChecked(true);
+                setted_Mode = "POINTING";
+            }
+            else if (response_Data.at(9) == 1)
+            {
+                ui->btnTracking->setChecked(true);
+                setted_Mode = "TRACKING";
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    /* Load Active Axis */
+    request_Data.clear();
+    request_Data.append((char)0x01); //AZ
+    status = serial_Port.send_Cmd_Blocking(0x10, request_Data, 2000, response_Data);
+    if (status == SP_STATUS_RESPONSE_OK)
+    {
+
+    }
+
 
     /* Load PID Params */
     for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
     {
         for (int idx_PID_Name = 0; idx_PID_Name < 5; idx_PID_Name++)
         {
-            data_Array.clear();
-            data_Array.append((char)(1 + idx_Axis));
-            data_Array.append((char)(1 + idx_PID_Name));
+            request_Data.clear();
+            request_Data.append((char)(1 + idx_Axis));
+            request_Data.append((char)(1 + idx_PID_Name));
 
 
         }
     }
-    /* Load Mode */
-
-    /* Load Active Axis */
 
     return true;
 }
@@ -540,12 +608,12 @@ void MainWindow::status_Append_Text(const QString &text, QColor color)
 /* Mode Button */
 void MainWindow::btnMode_clicked(const QString &cmd)
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     char msgID;
 
     /* Set both (AZ and EL) */
-    data_Array.clear();
-    data_Array.append((char)0x03);
+    request_Data.clear();
+    request_Data.append((char)0x03);
 
     if (cmd == "HOME")
     {
@@ -562,23 +630,23 @@ void MainWindow::btnMode_clicked(const QString &cmd)
     else if (cmd == "MANUAL")
     {
         msgID = (char)(0x04);
-        data_Array.append((char)0x00);
+        request_Data.append((char)0x00);
     }
     else if (cmd == "POINTING")
     {
         msgID = (char)(0x04);
-        data_Array.append((char)0x02);
+        request_Data.append((char)0x02);
     }
     else if (cmd == "TRACKING")
     {
         msgID = (char)(0x04);
-        data_Array.append((char)0x01);
+        request_Data.append((char)0x01);
     }
 
     status_Append_Text("- Send: Set Mode " + cmd);
 
     /* Send */
-    serial_Port.send_Cmd_Non_Blocking(msgID, data_Array);
+    serial_Port.send_Cmd_Non_Blocking(msgID, request_Data);
 }
 
 /* PID LineEdit & Write Button */
@@ -612,26 +680,52 @@ void MainWindow::leditPID_editingFinished(const QString &pid_Name)
     if (setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] != ledit_Sender->text())
     {
         ledit_Sender->setStyleSheet(stylesheet_Widget_Changed);
-        changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = true;
     }
     else
     {
         ledit_Sender->setStyleSheet(stylesheet_Widget_Not_Changed);
-        changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
     }
 }
 
-void MainWindow::on_btnWritePositionLoop_clicked()
+/* PID WR Button */
+void MainWindow::btnWritePID_clicked(const QString &name)
 {
     QLineEdit *leditPID;
-    QByteArray data_Array;
+    QByteArray request_Data, response_Data;
     quint32 scaled_Value = 0;
     bool first_Send_Flag = false;
+    int idx_PID_Name_Min = 0, idx_PID_Name_Max = 0;
+    ENUM_SP_STATUS_T status;
+    static QString stylesheet_Widget_Not_Changed = QString("\
+        QLineEdit { \
+            font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
+            min-height: %2px; min-width: %3px; padding-left: 4px; \
+        } \
+        QLineEdit:focus { border: 2px solid #cc6600; } \
+        QLineEdit:hover { border: 2px solid #cc6600; } \
+    ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
 
-    ui->btnWritePositionLoop->setDisabled(true);
+    QMutexLocker locker(&mutex_PID_WR);
+
+    if (name == "POSITION")
+    {
+        idx_PID_Name_Min = 0;
+        idx_PID_Name_Max = 3;
+    }
+    else if (name == "VELOCITY")
+    {
+        idx_PID_Name_Min = 3;
+        idx_PID_Name_Max = 4;
+    }
+    else //if (name == "CURRENT")
+    {
+        idx_PID_Name_Min = 4;
+        idx_PID_Name_Max = 5;
+    }
+
     for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
     {
-        for (int idx_PID_Name = 0; idx_PID_Name < 3; idx_PID_Name++)
+        for (int idx_PID_Name = idx_PID_Name_Min; idx_PID_Name < idx_PID_Name_Max; idx_PID_Name++)
         {
             for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
             {
@@ -640,150 +734,56 @@ void MainWindow::on_btnWritePositionLoop_clicked()
                 {
                     status_Append_Text(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
                     leditPID->setText(setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx]);
-                    changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
                 }
-                if (changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] == true)
+                if (leditPID->text() != setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx])
                 {
-                    data_Array.clear();
-                    data_Array.append((char)(1 + idx_Axis));
-                    data_Array.append((char)(1 + idx_PID_Name));
+                    request_Data.clear();
+                    request_Data.append((char)(1 + idx_Axis));
+                    request_Data.append((char)(1 + idx_PID_Name));
 
                     scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
-                    data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-                    data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-                    data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-                    data_Array.append((char)((scaled_Value) & 0x0ff));
+                    request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+                    request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+                    request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+                    request_Data.append((char)((scaled_Value) & 0x0ff));
 
-                    //if (send_Command(0x09 + idx_Kx, data_Array) == true)
+                    if (first_Send_Flag == false)
                     {
-                        if (first_Send_Flag == false)
-                        {
-                            first_Send_Flag = true;
-                            status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                        }
+                        first_Send_Flag = true;
+                        status_Append_Text("- Send: Write " + name + " Loop");
                     }
-                    //else
+                    status = serial_Port.send_Cmd_Blocking(0x0a + idx_Kx, request_Data, 2000, response_Data);
+                    if (status == SP_STATUS_NO_CONNECT)
                     {
-                        status_Append_Text("- No Serial Port is connected");
-                        break;
+                        status_Append_Text("- No Serial Port is connected", Qt::red);
+                        return;
+                    }
+                    else if (status != SP_STATUS_RESPONSE_OK)
+                    {
+                        status_Append_Text("- Fail to Write some params", Qt::red);
+                        return;
+                    }
+                    else
+                    {
+                        setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = leditPID->text();
+                        leditPID->setStyleSheet(stylesheet_Widget_Not_Changed);
                     }
                 }
             }
         }
     }
-    ui->btnWritePositionLoop->setDisabled(false);
-}
 
-void MainWindow::on_btnWriteVelocityLoop_clicked()
-{
-    QLineEdit *leditPID;
-    QByteArray data_Array;
-    quint32 scaled_Value = 0;
-    bool first_Send_Flag = false;
-
-    ui->btnWriteVelocityLoop->setDisabled(true);
-    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
+    if (first_Send_Flag == true)
     {
-        for (int idx_PID_Name = 3; idx_PID_Name < 4; idx_PID_Name++)
-        {
-            for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
-            {
-                leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                if (leditPID->text() == NULL)
-                {
-                    status_Append_Text(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                    leditPID->setText(setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx]);
-                    changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
-                }
-                if (changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] == true)
-                {
-                    data_Array.clear();
-                    data_Array.append((char)(1 + idx_Axis));
-                    data_Array.append((char)(1 + idx_PID_Name));
-
-                    scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
-                    data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-                    data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-                    data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-                    data_Array.append((char)((scaled_Value) & 0x0ff));
-
-                    //if (send_Command(0x09 + idx_Kx, data_Array) == true)
-                    {
-                        if (first_Send_Flag == false)
-                        {
-                            first_Send_Flag = true;
-                            status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                        }
-                    }
-                    //else
-                    {
-                        status_Append_Text("- No Serial Port is connected");
-                        break;
-                    }
-                }
-            }
-        }
+        /* write no error will reach this */
+        status_Append_Text("- Receive: Write " + name + " Loop Done", Qt::darkGreen);
     }
-    ui->btnWriteVelocityLoop->setDisabled(false);
-}
-
-void MainWindow::on_btnWriteCurrentLoop_clicked()
-{
-    QLineEdit *leditPID;
-    QByteArray data_Array;
-    quint32 scaled_Value = 0;
-    bool first_Send_Flag = false;
-
-    ui->btnWriteCurrentLoop->setDisabled(true);
-    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
-    {
-        for (int idx_PID_Name = 4; idx_PID_Name < 5; idx_PID_Name++)
-        {
-            for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
-            {
-                leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                if (leditPID->text() == NULL)
-                {
-                    status_Append_Text(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                    leditPID->setText(setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx]);
-                    changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] = false;
-                }
-                if (changed_PID_LineEdit[idx_Axis][idx_PID_Name][idx_Kx] == true)
-                {
-                    data_Array.clear();
-                    data_Array.append((char)(1 + idx_Axis));
-                    data_Array.append((char)(1 + idx_PID_Name));
-
-                    scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
-                    data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-                    data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-                    data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-                    data_Array.append((char)((scaled_Value) & 0x0ff));
-
-                    //if (send_Command(0x09 + idx_Kx, data_Array) == true)
-                    {
-                        if (first_Send_Flag == false)
-                        {
-                            first_Send_Flag = true;
-                            status_Append_Text(QString("- Send: Set Params").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                        }
-                    }
-                    //else
-                    {
-                        status_Append_Text("- No Serial Port is connected");
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    ui->btnWriteCurrentLoop->setDisabled(false);
 }
 
 /* Pos and Vel (Set, Get) */
 void MainWindow::on_btnAZSetPos_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     qint32 scaled_Value = 0;
 
     if (ui->leditAZPos->text() == NULL)
@@ -792,8 +792,8 @@ void MainWindow::on_btnAZSetPos_clicked()
     }
     else
     {
-        data_Array.clear();
-        data_Array.append((char)0x01);
+        request_Data.clear();
+        request_Data.append((char)0x01);
 
         scaled_Value = qint32 (ui->leditAZPos->text().toDouble() * 100);
         if ((scaled_Value > 18000) || (scaled_Value < -18000))
@@ -802,20 +802,20 @@ void MainWindow::on_btnAZSetPos_clicked()
         }
         else
         {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+            request_Data.append((char)((scaled_Value) & 0x0ff));
 
             status_Append_Text("- Send: Set AZ Pos");
-            serial_Port.send_Cmd_Non_Blocking(0x06, data_Array);
+            serial_Port.send_Cmd_Non_Blocking(0x06, request_Data);
         }
     }
 }
 
 void MainWindow::on_btnAZSetVel_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     qint32 scaled_Value = 0;
 
     if (ui->leditAZVel->text() == NULL)
@@ -824,8 +824,8 @@ void MainWindow::on_btnAZSetVel_clicked()
     }
     else
     {
-        data_Array.clear();
-        data_Array.append((char)0x01);
+        request_Data.clear();
+        request_Data.append((char)0x01);
 
         scaled_Value = qint32 (ui->leditAZVel->text().toDouble() * 100);
 //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
@@ -834,13 +834,13 @@ void MainWindow::on_btnAZSetVel_clicked()
 //        }
 //        else
         {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+            request_Data.append((char)((scaled_Value) & 0x0ff));
 
             status_Append_Text("- Send: Set AZ Vel");
-            serial_Port.send_Cmd_Non_Blocking(0x07, data_Array);
+            serial_Port.send_Cmd_Non_Blocking(0x07, request_Data);
 
         }
     }
@@ -848,7 +848,7 @@ void MainWindow::on_btnAZSetVel_clicked()
 
 void MainWindow::on_btnAZSetBoth_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     qint32 scaled_Value = 0;
 
     if (ui->leditAZPos->text() == NULL)
@@ -861,8 +861,8 @@ void MainWindow::on_btnAZSetBoth_clicked()
     }
     else
     {
-        data_Array.clear();
-        data_Array.append((char)0x01);
+        request_Data.clear();
+        request_Data.append((char)0x01);
 
         scaled_Value = qint32 (ui->leditAZPos->text().toDouble() * 100);
         if ((scaled_Value > 18000) || (scaled_Value < -18000))
@@ -870,10 +870,10 @@ void MainWindow::on_btnAZSetBoth_clicked()
             QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
             return;
         }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+        request_Data.append((char)((scaled_Value) & 0x0ff));
 
         scaled_Value = qint32 (ui->leditAZVel->text().toDouble() * 100);
 //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
@@ -881,29 +881,29 @@ void MainWindow::on_btnAZSetBoth_clicked()
 //            QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
 //            return;
 //        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+        request_Data.append((char)((scaled_Value) & 0x0ff));
 
         status_Append_Text("- Send: Set AZ Pos Vel");
-        serial_Port.send_Cmd_Non_Blocking(0x08, data_Array);
+        serial_Port.send_Cmd_Non_Blocking(0x08, request_Data);
     }
 }
 
 void MainWindow::on_btnAZGetPos_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
 
-    data_Array.clear();
-    data_Array.append((char)0x01);
+    request_Data.clear();
+    request_Data.append((char)0x01);
     status_Append_Text("- Send: Get AZ Pos");
-    serial_Port.send_Cmd_Non_Blocking(0x09, data_Array);
+    serial_Port.send_Cmd_Non_Blocking(0x09, request_Data);
 }
 
 void MainWindow::on_btnELSetPos_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     qint32 scaled_Value = 0;
 
     if (ui->leditELPos->text() == NULL)
@@ -912,8 +912,8 @@ void MainWindow::on_btnELSetPos_clicked()
     }
     else
     {
-        data_Array.clear();
-        data_Array.append((char)0x02);
+        request_Data.clear();
+        request_Data.append((char)0x02);
 
         scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
         if ((scaled_Value > 3000) || (scaled_Value < -3000))
@@ -922,20 +922,20 @@ void MainWindow::on_btnELSetPos_clicked()
         }
         else
         {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+            request_Data.append((char)((scaled_Value) & 0x0ff));
 
             status_Append_Text("- Send: Set EL Pos");
-            serial_Port.send_Cmd_Non_Blocking(0x06, data_Array);
+            serial_Port.send_Cmd_Non_Blocking(0x06, request_Data);
         }
     }
 }
 
 void MainWindow::on_btnELSetVel_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     qint32 scaled_Value = 0;
 
     if (ui->leditELVel->text() == NULL)
@@ -944,8 +944,8 @@ void MainWindow::on_btnELSetVel_clicked()
     }
     else
     {
-        data_Array.clear();
-        data_Array.append((char)0x02);
+        request_Data.clear();
+        request_Data.append((char)0x02);
 
         scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
 //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
@@ -954,20 +954,20 @@ void MainWindow::on_btnELSetVel_clicked()
 //        }
 //        else
         {
-            data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-            data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-            data_Array.append((char)((scaled_Value) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+            request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+            request_Data.append((char)((scaled_Value) & 0x0ff));
 
             status_Append_Text("- Send: Set EL Vel");
-            serial_Port.send_Cmd_Non_Blocking(0x07, data_Array);
+            serial_Port.send_Cmd_Non_Blocking(0x07, request_Data);
         }
     }
 }
 
 void MainWindow::on_btnELSetBoth_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     qint32 scaled_Value = 0;
 
     if (ui->leditELPos->text() == NULL)
@@ -980,8 +980,8 @@ void MainWindow::on_btnELSetBoth_clicked()
     }
     else
     {
-        data_Array.clear();
-        data_Array.append((char)0x02);
+        request_Data.clear();
+        request_Data.append((char)0x02);
 
         scaled_Value = qint32 (ui->leditELPos->text().toDouble() * 100);
         if ((scaled_Value > 18000) || (scaled_Value < -18000))
@@ -989,10 +989,10 @@ void MainWindow::on_btnELSetBoth_clicked()
             QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
             return;
         }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+        request_Data.append((char)((scaled_Value) & 0x0ff));
 
         scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
 //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
@@ -1000,71 +1000,71 @@ void MainWindow::on_btnELSetBoth_clicked()
 //            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
 //            return;
 //        }
-        data_Array.append((char)((scaled_Value >> 24) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 16) & 0x0ff));
-        data_Array.append((char)((scaled_Value >> 8) & 0x0ff));
-        data_Array.append((char)((scaled_Value) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+        request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+        request_Data.append((char)((scaled_Value) & 0x0ff));
 
         status_Append_Text("- Send: Set EL Pos Vel");
-        serial_Port.send_Cmd_Non_Blocking(0x08, data_Array);
+        serial_Port.send_Cmd_Non_Blocking(0x08, request_Data);
     }
 }
 
 void MainWindow::on_btnELGetPos_clicked()
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
 
-    data_Array.clear();
-    data_Array.append((char)0x02);
+    request_Data.clear();
+    request_Data.append((char)0x02);
     status_Append_Text("- Send: Get EL Pos");
-    serial_Port.send_Cmd_Non_Blocking(0x09, data_Array);
+    serial_Port.send_Cmd_Non_Blocking(0x09, request_Data);
 }
 
 /* Active Axis */
 void MainWindow::on_btnAZActive_clicked(bool checked)
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     QString message_status;
 
-    data_Array.clear();
-    data_Array.append((char)0x01); //Axis AZ
+    request_Data.clear();
+    request_Data.append((char)0x01); //Axis AZ
 
 
     if (checked == true)
     {
         message_status = "- Send: Set AZ Enable";
-        data_Array.append((char)0x01); //enable
+        request_Data.append((char)0x01); //enable
     }
     else
     {
         message_status = "- Send: Set AZ Disable";
-        data_Array.append((char)0x00); //disable
+        request_Data.append((char)0x00); //disable
     }
 
     status_Append_Text(message_status);
-    serial_Port.send_Cmd_Non_Blocking(0x10, data_Array);
+    serial_Port.send_Cmd_Non_Blocking(0x10, request_Data);
 }
 
 void MainWindow::on_btnELActive_clicked(bool checked)
 {
-    QByteArray data_Array;
+    QByteArray request_Data;
     QString message_status;
 
-    data_Array.clear();
-    data_Array.append((char)0x02); //Axis EL
+    request_Data.clear();
+    request_Data.append((char)0x02); //Axis EL
 
 
     if (checked == true)
     {
         message_status = "- Send: Set EL Enable";
-        data_Array.append((char)0x01); //enable
+        request_Data.append((char)0x01); //enable
     }
     else
     {
         message_status = "- Send: Set EL Disable";
-        data_Array.append((char)0x00); //disable
+        request_Data.append((char)0x00); //disable
     }
 
     status_Append_Text(message_status);
-    serial_Port.send_Cmd_Non_Blocking(0x10, data_Array);
+    serial_Port.send_Cmd_Non_Blocking(0x10, request_Data);
 }

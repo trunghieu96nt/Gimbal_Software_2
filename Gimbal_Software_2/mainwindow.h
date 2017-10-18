@@ -12,6 +12,7 @@
 #include <QDesktopWidget>
 #include <QSignalMapper>
 #include <QQueue>
+#include <QMutex>
 
 #include "serialport.h"
 
@@ -35,17 +36,18 @@ private slots:
     /* Serial COM Port */
     void on_btnConnect_clicked();
     void timerSerialPort_timeout();
-    void serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &respond);
+    void serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &response);
 
     /* Mode Button */
     void btnMode_clicked(const QString &cmd_Data);
 
+    /* PID WR Button*/
+    void btnWritePID_clicked(const QString &name);
+
     /* PID LineEdit */
     void leditPID_editingFinished(const QString &pid_Name);
-    void on_btnWritePositionLoop_clicked();
-    void on_btnWriteVelocityLoop_clicked();
-    void on_btnWriteCurrentLoop_clicked();
 
+    /* Pos & Vel button */
     void on_btnAZSetPos_clicked();
     void on_btnAZSetVel_clicked();
     void on_btnAZSetBoth_clicked();
@@ -55,6 +57,7 @@ private slots:
     void on_btnELSetBoth_clicked();
     void on_btnELGetPos_clicked();
 
+    /* Active Axis button */
     void on_btnAZActive_clicked(bool checked);
     void on_btnELActive_clicked(bool checked);
 
@@ -71,7 +74,7 @@ private:
     QString setted_Mode;
 
     QString setted_PID_Value[2][5][5];
-    bool changed_PID_LineEdit[2][5][5];
+    QMutex mutex_PID_WR;
 
     bool setted_Active_Value[2] = {false, false};
 
@@ -80,6 +83,7 @@ private:
     void init_Serial_Port();
     void init_Mode_Button_Mapping();
     void init_PID_LineEdit_Mapping();
+    void init_PID_WR_Button_Mapping();
 
     bool load_All_Params();
     void status_Append_Text(const QString &text);

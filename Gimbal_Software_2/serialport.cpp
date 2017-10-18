@@ -6,7 +6,7 @@ SerialPort::SerialPort(QObject *parent) : QObject(parent)
     timer_Send.setInterval(2000);
     connect(&timer_Send, SIGNAL(timeout()), this, SLOT(timer_Send_Timeout()));
 
-    connect(&serial, SIGNAL(readyRead()), this, SLOT(serial_readyRead()));;
+    connect(&serial, SIGNAL(readyRead()), this, SLOT(serial_readyRead()));
 }
 
 /* open and close port */
@@ -62,7 +62,7 @@ void SerialPort::transaction(const QByteArray &request)
     }
 }
 
-void SerialPort::transaction_in_queue()
+void SerialPort::transaction_In_Queue()
 {
     if (this->request_Queue.isEmpty() == false)
     {
@@ -94,13 +94,13 @@ void SerialPort::timer_Send_Timeout()
 {
     emit this->done(SP_STATUS_TIMEOUT_RD, this->current_Request, NULL);
     this->current_Request.clear();
-    this->transaction_in_queue();
+    this->transaction_In_Queue();
 }
 
 void SerialPort::serial_readyRead()
 {
     int idx_GB, msg_Length;
-    QByteArray respond;
+    QByteArray response;
 
     this->data_Serial_Port.append(serial.readAll());
     idx_GB = data_Serial_Port.indexOf("GB");
@@ -116,52 +116,51 @@ void SerialPort::serial_readyRead()
     /* wait size until greater than msg_Length */
     if (data_Serial_Port.size() < msg_Length) return;
 
-    /* get respond */
-    respond = data_Serial_Port.left(msg_Length);
+    /* get response */
+    response = data_Serial_Port.left(msg_Length);
     data_Serial_Port.remove(0, msg_Length);
 
-    /* check respond */
+    /* check response */
     if (this->current_Request.isNull() == true) return;
 
     timer_Send.stop();
-    if (respond.size() < 10)
+    if (response.size() < 10)
     {
-        emit this->done(SP_STATUS_RESPOND_ERR, this->current_Request, NULL);
+        emit this->done(SP_STATUS_RESPONSE_ERR, this->current_Request, NULL);
         this->current_Request.clear();
     }
     else
     {
         quint16 checksum = 0, checksum_Mask = 0;
-        checksum_Mask = (respond.at(respond.size() - 2) << 8) & 0x0ff00;
-        checksum_Mask += respond.at(respond.size() - 1) & 0x0ff;
-        for (int i = 0; i < (respond.size() - 2); i++)
+        checksum_Mask = (response.at(response.size() - 2) << 8) & 0x0ff00;
+        checksum_Mask += response.at(response.size() - 1) & 0x0ff;
+        for (int i = 0; i < (response.size() - 2); i++)
         {
-            checksum += static_cast<unsigned char>(respond.at(i));
+            checksum += static_cast<unsigned char>(response.at(i));
         }
         checksum = ~checksum;
 
-        if ((checksum_Mask != checksum) || (respond.at(2) != 0x01) ||
-                (respond.at(6) != this->current_Request.at(6)) || (respond.at(7) != this->current_Request.at(7)))
+        if ((checksum_Mask != checksum) || (response.at(2) != 0x01) ||
+                (response.at(6) != this->current_Request.at(6)) || (response.at(7) != this->current_Request.at(7)))
         {
-            emit this->done(SP_STATUS_RESPOND_ERR, this->current_Request, NULL);
+            emit this->done(SP_STATUS_RESPONSE_ERR, this->current_Request, NULL);
             this->current_Request.clear();
         }
         else
         {
-            emit this->done(SP_STATUS_RESPOND_OK, this->current_Request, respond);
+            emit this->done(SP_STATUS_RESPONSE_OK, this->current_Request, response);
             this->current_Request.clear();
         }
     }
-    this->transaction_in_queue();
+    this->transaction_In_Queue();
 }
 
 /* Packaged Send */
-ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &payload, int wait_Timeout)
+ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &payload, int wait_Timeout, QByteArray &response)
 {
     QByteArray request;
-    QByteArray response;
     quint16 checkSum = 0;
-    ENUM_SP_STATUS_T status = SP_STATUS_RESPOND_OK;
+    ENUM_SP_STATUS_T status = SP_STATUS_RESPONSE_OK;
 
     request.clear();
     response.clear();
@@ -196,6 +195,7 @@ ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &pay
     else
     {
         mutex_Send.lock();
+        disconnect(&serial, SIGNAL(readyRead()), this, SLOT(serial_readyRead()));
         serial.write(request);
         if (serial.waitForBytesWritten(wait_Timeout))
         {
@@ -214,6 +214,7 @@ ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &pay
         {
             status = SP_STATUS_TIMEOUT_WR;
         }
+        connect(&serial, SIGNAL(readyRead()), this, SLOT(serial_readyRead()));
         mutex_Send.unlock();
     }
 
@@ -223,8 +224,8 @@ ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &pay
         quint16 checksum = 0, checksum_Mask = 0;
 
         /* Check DstID */
-        if (response.size() < 3) return SP_STATUS_RESPOND_ERR;
-        if (response.at(2) != 0x01) return SP_STATUS_RESPOND_ERR;
+        if (response.size() < 3) return SP_STATUS_RESPONSE_ERR;
+        if (response.at(2) != 0x01) return SP_STATUS_RESPONSE_ERR;
 
         /* Checksum */
         checksum_Mask = (response.at(response.size() - 2) << 8) & 0x0ff00;
@@ -234,11 +235,11 @@ ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &pay
             checksum += static_cast<unsigned char>(response.at(i));
         }
         checksum = ~checksum;
-        if (checksum_Mask != checksum) return SP_STATUS_RESPOND_ERR;
+        if (checksum_Mask != checksum) return SP_STATUS_RESPONSE_ERR;
 
-        /* Handle Respond Set Message */
-        if (request.at(6) != response.at(6)) return SP_STATUS_RESPOND_ERR;
-        if (request.at(7) != response.at(7)) return SP_STATUS_RESPOND_ERR;
+        /* Handle Response Set Message */
+        if (request.at(6) != response.at(6)) return SP_STATUS_RESPONSE_ERR;
+        if (request.at(7) != response.at(7)) return SP_STATUS_RESPONSE_ERR;
     }
     return status;
 }

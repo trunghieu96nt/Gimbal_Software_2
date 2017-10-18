@@ -11,8 +11,8 @@ typedef enum
 {
     SP_STATUS_ACK_OK = 0,
     SP_STATUS_ACK_ERR,
-    SP_STATUS_RESPOND_ERR,
-    SP_STATUS_RESPOND_OK,
+    SP_STATUS_RESPONSE_ERR,
+    SP_STATUS_RESPONSE_OK,
     SP_STATUS_NO_CONNECT,
     SP_STATUS_TIMEOUT_RD,
     SP_STATUS_TIMEOUT_WR,
@@ -29,8 +29,8 @@ public:
     void disconnect_Port();
 
     void transaction(const QByteArray &request);
-    void transaction_in_queue();
-    ENUM_SP_STATUS_T send_Cmd_Blocking(char msgID, const QByteArray &payload, int wait_Timeout);
+    void transaction_In_Queue();
+    ENUM_SP_STATUS_T send_Cmd_Blocking(char msgID, const QByteArray &payload, int wait_Timeout, QByteArray &response);
     void send_Cmd_Non_Blocking(char msgID, const QByteArray &payload);
 
 signals:
