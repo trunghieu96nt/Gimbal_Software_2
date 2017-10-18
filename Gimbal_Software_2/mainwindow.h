@@ -16,6 +16,13 @@
 
 #include "serialport.h"
 
+typedef struct
+{
+    QString cmd_name;
+    char cmd_msgID;
+    QByteArray cmd_payload;
+} STRU_CMD_T;
+
 namespace Ui {
 class MainWindow;
 }
@@ -34,6 +41,7 @@ private slots:
     void on_btnSettings_clicked();
 
     /* Serial COM Port */
+    void timer_Get_All_Params_timeout();
     void on_btnConnect_clicked();
     void timerSerialPort_timeout();
     void serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &response);
@@ -78,6 +86,24 @@ private:
 
     bool setted_Active_Value[2] = {false, false};
 
+    QTimer timer_Get_All_Params;
+    int cmd_Counter;
+
+    STRU_CMD_T stru_GB_CMD[11] =
+    {
+        { "GET_MODE",         0x05, QByteArray::fromRawData("\x03", 1) },
+        { "GET_AZ_MANUAL",    0x0F, QByteArray::fromRawData("\x01\x01", 2) },
+        { "GET_AZ_POINTING",  0x0F, QByteArray::fromRawData("\x01\x02", 2) },
+        { "GET_AZ_VELOCITY",  0x0F, QByteArray::fromRawData("\x01\x04", 2) },
+        { "GET_AZ_CURRENT",   0x0F, QByteArray::fromRawData("\x01\x05", 2) },
+        { "GET_EL_MANUAL",    0x0F, QByteArray::fromRawData("\x02\x01", 2) },
+        { "GET_EL_POINTING",  0x0F, QByteArray::fromRawData("\x02\x02", 2) },
+        { "GET_EL_VELOCITY",  0x0F, QByteArray::fromRawData("\x02\x04", 2) },
+        { "GET_EL_CURRENT",   0x0F, QByteArray::fromRawData("\x02\x05", 2) },
+        { "GET_ACTIVE_AZ",    0x11, QByteArray::fromRawData("\x01", 1) },
+        { "GET_ACTIVE_AZ",    0x11, QByteArray::fromRawData("\x02", 1) },
+    };
+
     void init_GUI();
     void init_Page();
     void init_Serial_Port();
@@ -85,7 +111,7 @@ private:
     void init_PID_LineEdit_Mapping();
     void init_PID_WR_Button_Mapping();
 
-    bool load_All_Params();
+    bool get_All_Params();
     void status_Append_Text(const QString &text);
     void status_Append_Text(const QString &text, QColor color);
 };

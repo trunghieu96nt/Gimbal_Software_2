@@ -152,6 +152,11 @@ void MainWindow::init_Page()
 
 void MainWindow::init_Serial_Port()
 {
+    /* for send all params function */
+    timer_Get_All_Params.setSingleShot(true);
+    timer_Get_All_Params.setInterval(50);
+    connect(&timer_Get_All_Params, SIGNAL(timeout()), this, SLOT(timer_Get_All_Params_timeout()));
+
     /* combo box baudrate Serial Port */
     ui->cboBaudrate->setCurrentText("115200");
     connect(&serial_Port, SIGNAL(done(ENUM_SP_STATUS_T,QByteArray,QByteArray)), this, SLOT(serial_port_done(ENUM_SP_STATUS_T,QByteArray,QByteArray)));
@@ -298,7 +303,7 @@ void MainWindow::on_btnConnect_clicked()
             ui->btnConnect->setStyleSheet(stylesheet_Widget);
             status_Append_Text("- " + serial_Port.port_Name() + " is connected");
             timerSerialPort->stop();
-            load_All_Params();
+            get_All_Params();
         }
     }
     else
@@ -404,7 +409,46 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
     }
     else if (msgID == 0x05) //get mode
     {
+        if (status != SP_STATUS_RESPONSE_OK)
+        {
 
+        }
+        else //if (status == SP_STATUS_ACK_OK)
+        {
+            switch (response.at(8))
+            {
+            case 0x01:
+                setted_Mode = "HOME";
+                ui->btnHome->setChecked(true);
+                break;
+            case 0x02:
+                setted_Mode = "STOP";
+                ui->btnStop->setChecked(true);
+                break;
+            case 0x03:
+                setted_Mode = "EMERGENCY_STOP";
+                break;
+            case 0x04:
+                if (response.at(9) == 0x00)
+                {
+                    setted_Mode = "MANUAL";
+                    ui->btnManual->setChecked(true);
+                }
+                else if (response.at(9) == 0x02)
+                {
+                    setted_Mode = "POINTING";
+                    ui->btnPointing->setChecked(true);
+                }
+                else if (response.at(9) == 0x01)
+                {
+                    setted_Mode = "TRACKING";
+                    ui->btnTracking->setChecked(true);
+                }
+                break;
+            default:
+                break;
+            }
+        }
     }
     else if ((msgID >= 0x06) && (msgID <= 0x08)) // set pos & vel
     {
@@ -460,6 +504,92 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
 
         }
     }
+    else if ((msgID >= 0x0a) && (msgID <= 0x0e)) //set params pid
+    {
+        QLineEdit *leditPID;
+        QString ledit_Name;
+        int idx_Axis, idx_PID_Name, idx_Kx;
+        static QString stylesheet_Widget_Not_Changed = QString("\
+            QLineEdit { \
+                font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
+                min-height: %2px; min-width: %3px; padding-left: 4px; \
+            } \
+            QLineEdit:focus { border: 2px solid #cc6600; } \
+            QLineEdit:hover { border: 2px solid #cc6600; } \
+        ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
+
+        idx_Axis = request.at(7) - 1;
+        idx_PID_Name = request.at(8) - 1;
+        idx_Kx = request.at(6) - 0x0a;
+        ledit_Name = QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx);
+        if (status != SP_STATUS_RESPONSE_OK)
+        {
+            status_Append_Text("- Fail to Write " + ledit_Name, Qt::red);
+            return;
+        }
+        else
+        {
+            leditPID = ui->centralWidget->findChild<QLineEdit *>(ledit_Name);
+            status_Append_Text("- Receive: Write " + ledit_Name, Qt::darkGreen);
+            setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = leditPID->text();
+            leditPID->setStyleSheet(stylesheet_Widget_Not_Changed);
+        }
+    }
+    else if (msgID == 0x0f) //get params pid
+    {
+        int cur_Value = 0;
+        QLineEdit *ledit_Kx;
+        int idx_Axis = (request.at(7) - 1);
+        int idx_PID_Name = (request.at(8) - 1);
+
+        if (status != SP_STATUS_RESPONSE_OK)
+        {
+
+        }
+        else
+        {
+            /* Kp */
+            cur_Value = (response.at(8) << 24) & 0x0ff000000;
+            cur_Value += (response.at(9) << 16) & 0x0ff0000;
+            cur_Value += (response.at(10) << 8) & 0x0ff00;
+            cur_Value += response.at(11) & 0x0ff;
+            ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_0").arg(idx_Axis).arg(idx_PID_Name));
+            ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
+
+            /* Ki */
+            cur_Value = (response.at(12) << 24) & 0x0ff000000;
+            cur_Value += (response.at(13) << 16) & 0x0ff0000;
+            cur_Value += (response.at(14) << 8) & 0x0ff00;
+            cur_Value += response.at(15) & 0x0ff;
+            ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_1").arg(idx_Axis).arg(idx_PID_Name));
+            ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
+
+            /* Kd */
+            cur_Value = (response.at(16) << 24) & 0x0ff000000;
+            cur_Value += (response.at(17) << 16) & 0x0ff0000;
+            cur_Value += (response.at(18) << 8) & 0x0ff00;
+            cur_Value += response.at(19) & 0x0ff;
+            ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_2").arg(idx_Axis).arg(idx_PID_Name));
+            ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
+
+            /* Kff1 */
+            cur_Value = (response.at(20) << 24) & 0x0ff000000;
+            cur_Value += (response.at(21) << 16) & 0x0ff0000;
+            cur_Value += (response.at(22) << 8) & 0x0ff00;
+            cur_Value += response.at(23) & 0x0ff;
+            ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_3").arg(idx_Axis).arg(idx_PID_Name));
+            ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
+
+            /* Kff2 */
+            cur_Value = (response.at(24) << 24) & 0x0ff000000;
+            cur_Value += (response.at(25) << 16) & 0x0ff0000;
+            cur_Value += (response.at(26) << 8) & 0x0ff00;
+            cur_Value += response.at(27) & 0x0ff;
+            ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_4").arg(idx_Axis).arg(idx_PID_Name));
+            ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
+        }
+
+    }
     else if (msgID == 0x10) //set active axis
     {
         QString message_status;
@@ -501,82 +631,61 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             }
         }
     }
+    else if (msgID == 0x11) //get active axis
+    {
+        if (status != SP_STATUS_RESPONSE_OK)
+        {
+
+        }
+        else //if (status == SP_STATUS_ACK_OK)
+        {
+            if (response.at(7) == 0x01) //AZ
+            {
+                if (response.at(8) == 0x01)
+                {
+                    ui->btnAZActive->setChecked(true);
+                    setted_Active_Value[0] = true;
+                }
+                else
+                {
+                    ui->btnAZActive->setChecked(false);
+                    setted_Active_Value[0] = false;
+                }
+            }
+            else if (response.at(7) == 0x02) //EL
+            {
+                if (response.at(8) == 0x01)
+                {
+                    ui->btnELActive->setChecked(true);
+                    setted_Active_Value[1] = true;
+                }
+                else
+                {
+                    ui->btnELActive->setChecked(false);
+                    setted_Active_Value[1] = false;
+                }
+            }
+        }
+    }
 
 }
 
 /* Load All Params */
-bool MainWindow::load_All_Params()
+bool MainWindow::get_All_Params()
 {
-    QByteArray request_Data, response_Data;
-    ENUM_SP_STATUS_T status;
-
-    status_Append_Text("- Send: Get All Params");
-
-    /* Load Mode */
-    request_Data.clear();
-    request_Data.append((char)0x03);
-    status = serial_Port.send_Cmd_Blocking(0x05, request_Data, 2000, response_Data);
-    if (status == SP_STATUS_RESPONSE_OK)
-    {
-        switch (response_Data.at(8))
-        {
-        case 0x01:
-            ui->btnHome->setChecked(true);
-            setted_Mode = "HOME";
-            break;
-        case 0x02:
-            ui->btnStop->setChecked(true);
-            setted_Mode = "STOP";
-            break;
-        case 0x03:
-            setted_Mode = "EMERGENCY_STOP";
-            break;
-        case 0x04:
-            if (response_Data.at(9) == 0)
-            {
-                ui->btnManual->setChecked(true);
-                setted_Mode = "MANUAL";
-            }
-            else if (response_Data.at(9) == 2)
-            {
-                ui->btnPointing->setChecked(true);
-                setted_Mode = "POINTING";
-            }
-            else if (response_Data.at(9) == 1)
-            {
-                ui->btnTracking->setChecked(true);
-                setted_Mode = "TRACKING";
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    /* Load Active Axis */
-    request_Data.clear();
-    request_Data.append((char)0x01); //AZ
-    status = serial_Port.send_Cmd_Blocking(0x10, request_Data, 2000, response_Data);
-    if (status == SP_STATUS_RESPONSE_OK)
-    {
-
-    }
-
-
-    /* Load PID Params */
-    for (int idx_Axis = 0; idx_Axis < 2; idx_Axis++)
-    {
-        for (int idx_PID_Name = 0; idx_PID_Name < 5; idx_PID_Name++)
-        {
-            request_Data.clear();
-            request_Data.append((char)(1 + idx_Axis));
-            request_Data.append((char)(1 + idx_PID_Name));
-
-
-        }
-    }
-
+    cmd_Counter = 0;
+    timer_Get_All_Params.start();
     return true;
+}
+
+void MainWindow::timer_Get_All_Params_timeout()
+{
+    serial_Port.send_Cmd_Non_Blocking(stru_GB_CMD[cmd_Counter].cmd_msgID, stru_GB_CMD[cmd_Counter].cmd_payload);
+    cmd_Counter++;
+    if (cmd_Counter >= 11)
+        cmd_Counter = 0;
+    else
+        timer_Get_All_Params.start();
 }
 
 /* Status Text for ptxtStatus_x */
@@ -695,15 +804,6 @@ void MainWindow::btnWritePID_clicked(const QString &name)
     quint32 scaled_Value = 0;
     bool first_Send_Flag = false;
     int idx_PID_Name_Min = 0, idx_PID_Name_Max = 0;
-    ENUM_SP_STATUS_T status;
-    static QString stylesheet_Widget_Not_Changed = QString("\
-        QLineEdit { \
-            font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
-            min-height: %2px; min-width: %3px; padding-left: 4px; \
-        } \
-        QLineEdit:focus { border: 2px solid #cc6600; } \
-        QLineEdit:hover { border: 2px solid #cc6600; } \
-    ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
 
     QMutexLocker locker(&mutex_PID_WR);
 
@@ -752,31 +852,10 @@ void MainWindow::btnWritePID_clicked(const QString &name)
                         first_Send_Flag = true;
                         status_Append_Text("- Send: Write " + name + " Loop");
                     }
-                    status = serial_Port.send_Cmd_Blocking(0x0a + idx_Kx, request_Data, 2000, response_Data);
-                    if (status == SP_STATUS_NO_CONNECT)
-                    {
-                        status_Append_Text("- No Serial Port is connected", Qt::red);
-                        return;
-                    }
-                    else if (status != SP_STATUS_RESPONSE_OK)
-                    {
-                        status_Append_Text("- Fail to Write some params", Qt::red);
-                        return;
-                    }
-                    else
-                    {
-                        setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = leditPID->text();
-                        leditPID->setStyleSheet(stylesheet_Widget_Not_Changed);
-                    }
+                    serial_Port.send_Cmd_Non_Blocking(0x0a + idx_Kx, request_Data);
                 }
             }
         }
-    }
-
-    if (first_Send_Flag == true)
-    {
-        /* write no error will reach this */
-        status_Append_Text("- Receive: Write " + name + " Loop Done", Qt::darkGreen);
     }
 }
 
