@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1920</width>
-    <height>1050</height>
+    <height>1080</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -198,7 +198,7 @@ QPushButton:hover:!pressed { background-color: #113A61; }</string>
              <x>0</x>
              <y>0</y>
              <width>1918</width>
-             <height>996</height>
+             <height>1026</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
@@ -601,7 +601,7 @@ QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; back
              <x>0</x>
              <y>0</y>
              <width>1918</width>
-             <height>996</height>
+             <height>1026</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_25" rowstretch="0,0,0" columnstretch="0,0,0">
