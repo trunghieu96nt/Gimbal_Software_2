@@ -159,7 +159,7 @@ QPushButton:hover:!pressed { background-color: #113A61; }</string>
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_0">
        <layout class="QGridLayout" name="gridLayout_3">
@@ -559,6 +559,21 @@ QGroupBox::title { subcontrol-position: top center; }</string>
        </layout>
       </widget>
       <widget class="QWidget" name="page_1">
+       <property name="styleSheet">
+        <string notr="true">QGroupBox { font: 16px; }
+QGroupBox::title { subcontrol-position: top center; }
+QLabel { font: bold 18px; }
+QLineEdit {
+	font: bold 18px; border: 2px solid #8f8f8f; border-radius: 5px;
+	min-height: 32px; min-width: 112px; padding-left: 4px;
+}
+QLineEdit:focus { border: 2px solid #cc6600; }
+QLineEdit:hover { border: 2px solid #cc6600; }
+QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; min-width: 100px;}
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed { background-color: #27598b; }
+QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; }</string>
+       </property>
        <layout class="QGridLayout" name="gridLayout_4">
         <property name="leftMargin">
          <number>0</number>
@@ -578,19 +593,7 @@ QGroupBox::title { subcontrol-position: top center; }</string>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollArea_1">
           <property name="styleSheet">
-           <string notr="true">QGroupBox { font: 16px; }
-QGroupBox::title { subcontrol-position: top center; }
-QLabel { font: bold 18px; }
-QLineEdit {
-	font: bold 18px; border: 2px solid #8f8f8f; border-radius: 5px;
-	min-height: 32px; min-width: 112px; padding-left: 4px;
-}
-QLineEdit:focus { border: 2px solid #cc6600; }
-QLineEdit:hover { border: 2px solid #cc6600; }
-QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; min-width: 100px;}
-QPushButton:pressed { background-color: #1c4063; }
-QPushButton:hover:!pressed { background-color: #27598b; }
-QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; }</string>
+           <string notr="true"/>
           </property>
           <property name="widgetResizable">
            <bool>true</bool>

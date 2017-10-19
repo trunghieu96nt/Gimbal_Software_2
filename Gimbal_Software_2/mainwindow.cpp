@@ -127,7 +127,7 @@ void MainWindow::init_GUI()
         QPlainTextEdit { font: %7px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; } \
         ").arg(int(16 * height_Factor)).arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor))
                                 .arg(int(40 * height_Factor)).arg(int(100 * width_Factor)).arg(int(14 * height_Factor));
-    ui->scrollArea_1->setStyleSheet(stylesheet_Widget);
+    ui->page_1->setStyleSheet(stylesheet_Widget);
 
     stylesheet_Widget = QString("\
         #grpActiveAxis { \
