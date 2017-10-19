@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     init_Mode_Button_Mapping();
     init_PID_LineEdit_Mapping();
     init_PID_WR_Button_Mapping();
+
+    connect(&timer_50ms, SIGNAL(timeout()), this, SLOT(timer_50ms_timeout()));
 }
 
 MainWindow::~MainWindow()
@@ -310,6 +312,7 @@ void MainWindow::on_btnConnect_clicked()
             status_Append_Text("- " + serial_Port.port_Name() + " is connected");
             timerSerialPort->stop();
             get_All_Params();
+            timer_50ms.start(50);
         }
     }
     else
@@ -507,7 +510,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             else if (response.at(7) == 0x02)
                 ui->leditELPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
 
-            status_Append_Text("- Recv: Get " + message_status + " Pos Done" , Qt::darkGreen);
+            //status_Append_Text("- Recv: Get " + message_status + " Pos Done" , Qt::darkGreen);
 
         }
     }
@@ -1226,4 +1229,15 @@ void MainWindow::on_btnELActive_clicked(bool checked)
 
     status_Append_Text(message_status);
     serial_Port.send_Cmd_Non_Blocking(0x10, request_Data);
+}
+
+/* test 50 ms */
+void MainWindow::timer_50ms_timeout()
+{
+    QByteArray request_Data;
+
+    request_Data.clear();
+    request_Data.append((char)0x02);
+    //status_Append_Text("- Send: Get EL Pos");
+    serial_Port.send_Cmd_Non_Blocking(0x09, request_Data);
 }

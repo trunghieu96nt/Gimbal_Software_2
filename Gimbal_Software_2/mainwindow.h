@@ -74,6 +74,9 @@ private slots:
     void show_ptxtStatus_Menu(QPoint pt);
     void ptxtStatus_Clear();
 
+    /* test */
+    void timer_50ms_timeout();
+
 private:
     Ui::MainWindow *ui;
 
@@ -93,6 +96,8 @@ private:
 
     QTimer timer_Get_All_Params;
     int cmd_Counter;
+
+    QTimer timer_50ms;
 
     STRU_CMD_T stru_GB_CMD[11] =
     {
