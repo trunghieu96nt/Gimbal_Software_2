@@ -74,6 +74,8 @@ private slots:
     void show_ptxtStatus_Menu(QPoint pt);
     void ptxtStatus_Clear();
 
+    void on_btnCameraCapture_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -115,6 +117,7 @@ private:
     void init_Mode_Button_Mapping();
     void init_PID_LineEdit_Mapping();
     void init_PID_WR_Button_Mapping();
+    void init_Camera();
 
     bool get_All_Params();
     void status_Append_Text(const QString &text);

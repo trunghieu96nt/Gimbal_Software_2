@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     init_Mode_Button_Mapping();
     init_PID_LineEdit_Mapping();
     init_PID_WR_Button_Mapping();
+    init_Camera();
 }
 
 MainWindow::~MainWindow()
@@ -273,6 +274,11 @@ void MainWindow::init_PID_WR_Button_Mapping()
     connect(ui->btnWriteCurrentLoop, SIGNAL(clicked()), pid_WR_Mapper, SLOT(map()));
 
     connect(pid_WR_Mapper, SIGNAL(mapped(const QString &)), SLOT(btnWritePID_clicked(const QString &)));
+}
+
+void MainWindow::init_Camera()
+{
+    //connect(ui->btnCameraCapture, SIGNAL(clicked()), this, SLOT(on_btnCameraCapture_clicked()));
 }
 
 /* Page Buttons */
@@ -1226,4 +1232,32 @@ void MainWindow::on_btnELActive_clicked(bool checked)
 
     status_Append_Text(message_status);
     serial_Port.send_Cmd_Non_Blocking(0x10, request_Data);
+}
+
+void MainWindow::on_btnCameraCapture_clicked()
+{
+    QString stylesheet_Widget;
+
+    if (ui->btnCameraCapture->text() == "Start Capture")
+    {
+        ui->cameraViewer->start_capture();
+        ui->btnCameraCapture->setText("Stop Capture");
+        stylesheet_Widget = QString("\
+                                    QPushButton { font: bold %1px; color: white; background-color: #774122; border-radius: 5px; min-height: %2px;} \
+                                    QPushButton:pressed { background-color: #63361c; } \
+                                    QPushButton:hover:!pressed { background-color: #8b4c27; } \
+                                    ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
+        ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
+    }
+    else
+    {
+        ui->cameraViewer->stop_capture();
+        ui->btnCameraCapture->setText("Start Capture");
+        stylesheet_Widget = QString("\
+            QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
+            QPushButton:pressed { background-color: #1c4063; } \
+            QPushButton:hover:!pressed { background-color: #27598b; } \
+            ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
+        ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
+    }
 }

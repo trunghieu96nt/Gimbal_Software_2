@@ -26,11 +26,28 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    serialport.cpp
+    serialport.cpp \
+    imageprocessingthread.cpp \
+    cqtopencvviewergl.cpp \
+    cvimageprocessor.cpp
 
 HEADERS += \
         mainwindow.h \
-    serialport.h
+    serialport.h \
+    imageprocessingthread.h \
+    cqtopencvviewergl.h \
+    cvimageprocessor.h
+
+INCLUDEPATH += D:\opencv3_3\opencv\build_qt\install\include
+
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_core330.dll
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_highgui330.dll
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgcodecs330.dll
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgproc330.dll
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_features2d330.dll
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_calib3d330.dll
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_tracking330.dll
+LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_videoio330.dll
 
 FORMS += \
         mainwindow.ui
