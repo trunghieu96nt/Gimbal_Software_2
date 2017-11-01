@@ -29,14 +29,16 @@ SOURCES += \
     serialport.cpp \
     imageprocessingthread.cpp \
     cqtopencvviewergl.cpp \
-    cvimageprocessor.cpp
+    pid.cpp \
+    imageprocessor.cpp
 
 HEADERS += \
         mainwindow.h \
     serialport.h \
     imageprocessingthread.h \
     cqtopencvviewergl.h \
-    cvimageprocessor.h
+    pid.h \
+    imageprocessor.h
 
 INCLUDEPATH += D:\opencv3_3\opencv\build_qt\install\include
 

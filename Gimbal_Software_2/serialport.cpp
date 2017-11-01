@@ -2,31 +2,31 @@
 
 SerialPort::SerialPort(QObject *parent) : QObject(parent)
 {
-    timer_Send.setSingleShot(true);
-    timer_Send.setInterval(2000);
-    connect(&timer_Send, SIGNAL(timeout()), this, SLOT(timer_Send_Timeout()));
+    timerSend.setSingleShot(true);
+    timerSend.setInterval(2000);
+    connect(&timerSend, SIGNAL(timeout()), this, SLOT(timerSendTimeout()));
 
-    connect(&serial, SIGNAL(readyRead()), this, SLOT(serial_readyRead()));
+    connect(&serial, SIGNAL(readyRead()), this, SLOT(serialReadyRead()));
 }
 
 /* open and close port */
-bool SerialPort::connect_Port(const QString &port_Name, qint32 baudrate)
+bool SerialPort::connectPort(const QString &port_Name, qint32 baudrate)
 {
-    this->sp_Port_Name = port_Name;
-    this->sp_Baudrate = baudrate;
+    this->spPortName = port_Name;
+    this->spBaudrate = baudrate;
 
     serial.setDataBits(QSerialPort::Data8);
     serial.setParity(QSerialPort::NoParity);
     serial.setStopBits(QSerialPort::OneStop);
     serial.setFlowControl(QSerialPort::NoFlowControl);
 
-    serial.setPortName(this->sp_Port_Name);
-    serial.setBaudRate(this->sp_Baudrate);
+    serial.setPortName(this->spPortName);
+    serial.setBaudRate(this->spBaudrate);
 
     return serial.open(QSerialPort::ReadWrite);
 }
 
-void SerialPort::disconnect_Port()
+void SerialPort::disconnectPort()
 {
     serial.close();
 }
@@ -34,100 +34,100 @@ void SerialPort::disconnect_Port()
 /* send and receive */
 void SerialPort::transaction(const QByteArray &request)
 {
-    this->request_Queue.enqueue(request);
+    this->requestQueue.enqueue(request);
 
-    if (timer_Send.isActive() == false)
+    if (timerSend.isActive() == false)
     {
-        this->current_Request = this->request_Queue.dequeue();
+        this->currentRequest = this->requestQueue.dequeue();
         if (serial.isOpen() == false)
         {
-            emit this->done(SP_STATUS_NO_CONNECT, this->current_Request, NULL);
-            this->current_Request.clear();
-            this->request_Queue.clear();
+            emit this->done(SP_STATUS_NO_CONNECT, this->currentRequest, NULL);
+            this->currentRequest.clear();
+            this->requestQueue.clear();
         }
         else
         {
-            serial.write(this->current_Request);
+            serial.write(this->currentRequest);
             if (serial.waitForBytesWritten(10))
             {
-                timer_Send.start();
+                timerSend.start();
             }
             else
             {
-                emit this->done(SP_STATUS_TIMEOUT_WR, this->current_Request, NULL);
-                this->current_Request.clear();
-                this->request_Queue.clear();
+                emit this->done(SP_STATUS_TIMEOUT_WR, this->currentRequest, NULL);
+                this->currentRequest.clear();
+                this->requestQueue.clear();
             }
         }
     }
 }
 
-void SerialPort::transaction_In_Queue()
+void SerialPort::transactionInQueue()
 {
-    if (this->request_Queue.isEmpty() == false)
+    if (this->requestQueue.isEmpty() == false)
     {
-        this->current_Request = this->request_Queue.dequeue();
+        this->currentRequest = this->requestQueue.dequeue();
         if (serial.isOpen() == false)
         {
-            emit this->done(SP_STATUS_NO_CONNECT, this->current_Request, NULL);
-            this->current_Request.clear();
-            this->request_Queue.clear();
+            emit this->done(SP_STATUS_NO_CONNECT, this->currentRequest, NULL);
+            this->currentRequest.clear();
+            this->requestQueue.clear();
         }
         else
         {
-            serial.write(this->current_Request);
+            serial.write(this->currentRequest);
             if (serial.waitForBytesWritten(10))
             {
-                timer_Send.start();
+                timerSend.start();
             }
             else
             {
-                emit this->done(SP_STATUS_TIMEOUT_WR, this->current_Request, NULL);
-                this->current_Request.clear();
-                this->request_Queue.clear();
+                emit this->done(SP_STATUS_TIMEOUT_WR, this->currentRequest, NULL);
+                this->currentRequest.clear();
+                this->requestQueue.clear();
             }
         }
     }
 }
 
-void SerialPort::timer_Send_Timeout()
+void SerialPort::timerSendTimeout()
 {
-    emit this->done(SP_STATUS_TIMEOUT_RD, this->current_Request, NULL);
-    this->current_Request.clear();
-    this->transaction_In_Queue();
+    emit this->done(SP_STATUS_TIMEOUT_RD, this->currentRequest, NULL);
+    this->currentRequest.clear();
+    this->transactionInQueue();
 }
 
-void SerialPort::serial_readyRead()
+void SerialPort::serialReadyRead()
 {
     int idx_GB, msg_Length;
     QByteArray response;
 
-    this->data_Serial_Port.append(serial.readAll());
-    idx_GB = data_Serial_Port.indexOf("GB");
+    this->dataSerialPort.append(serial.readAll());
+    idx_GB = dataSerialPort.indexOf("GB");
     if (idx_GB == -1) return;
 
     /* remove invalid data */
-    data_Serial_Port.remove(0, idx_GB);
+    dataSerialPort.remove(0, idx_GB);
 
     /* wait size until greater than 6 */
-    if (data_Serial_Port.size() < 6) return;
-    msg_Length = data_Serial_Port.at(5) + 6;
+    if (dataSerialPort.size() < 6) return;
+    msg_Length = dataSerialPort.at(5) + 6;
 
     /* wait size until greater than msg_Length */
-    if (data_Serial_Port.size() < msg_Length) return;
+    if (dataSerialPort.size() < msg_Length) return;
 
     /* get response */
-    response = data_Serial_Port.left(msg_Length);
-    data_Serial_Port.remove(0, msg_Length);
+    response = dataSerialPort.left(msg_Length);
+    dataSerialPort.remove(0, msg_Length);
 
     /* check response */
-    if (this->current_Request.isNull() == true) return;
+    if (this->currentRequest.isNull() == true) return;
 
-    timer_Send.stop();
+    timerSend.stop();
     if (response.size() < 10)
     {
-        emit this->done(SP_STATUS_RESPONSE_ERR, this->current_Request, NULL);
-        this->current_Request.clear();
+        emit this->done(SP_STATUS_RESPONSE_ERR, this->currentRequest, NULL);
+        this->currentRequest.clear();
     }
     else
     {
@@ -141,22 +141,22 @@ void SerialPort::serial_readyRead()
         checksum = ~checksum;
 
         if ((checksum_Mask != checksum) || (response.at(2) != 0x01) ||
-                (response.at(6) != this->current_Request.at(6)) || (response.at(7) != this->current_Request.at(7)))
+                (response.at(6) != this->currentRequest.at(6)) || (response.at(7) != this->currentRequest.at(7)))
         {
-            emit this->done(SP_STATUS_RESPONSE_ERR, this->current_Request, NULL);
-            this->current_Request.clear();
+            emit this->done(SP_STATUS_RESPONSE_ERR, this->currentRequest, NULL);
+            this->currentRequest.clear();
         }
         else
         {
-            emit this->done(SP_STATUS_RESPONSE_OK, this->current_Request, response);
-            this->current_Request.clear();
+            emit this->done(SP_STATUS_RESPONSE_OK, this->currentRequest, response);
+            this->currentRequest.clear();
         }
     }
-    this->transaction_In_Queue();
+    this->transactionInQueue();
 }
 
 /* Packaged Send */
-ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &payload, int wait_Timeout, QByteArray &response)
+ENUM_SP_STATUS_T SerialPort::sendCmdBlocking(char msgID, const QByteArray &payload, int wait_Timeout, QByteArray &response)
 {
     QByteArray request;
     quint16 checkSum = 0;
@@ -194,8 +194,8 @@ ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &pay
     }
     else
     {
-        mutex_Send.lock();
-        disconnect(&serial, SIGNAL(readyRead()), this, SLOT(serial_readyRead()));
+        mutexSend.lock();
+        disconnect(&serial, SIGNAL(readyRead()), this, SLOT(serialReadyRead()));
         serial.write(request);
         if (serial.waitForBytesWritten(wait_Timeout))
         {
@@ -214,8 +214,8 @@ ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &pay
         {
             status = SP_STATUS_TIMEOUT_WR;
         }
-        connect(&serial, SIGNAL(readyRead()), this, SLOT(serial_readyRead()));
-        mutex_Send.unlock();
+        connect(&serial, SIGNAL(readyRead()), this, SLOT(serialReadyRead()));
+        mutexSend.unlock();
     }
 
     /* check ack */
@@ -244,7 +244,7 @@ ENUM_SP_STATUS_T SerialPort::send_Cmd_Blocking(char msgID, const QByteArray &pay
     return status;
 }
 
-void SerialPort::send_Cmd_Non_Blocking(char msgID, const QByteArray &payload)
+void SerialPort::sendCmdNonBlocking(char msgID, const QByteArray &payload)
 {
     QByteArray request;
     quint16 checkSum = 0;

@@ -9,13 +9,16 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowState(Qt::WindowMaximized);
 
     /* Initialization */
-    init_GUI();
-    init_Page();
-    init_Serial_Port();
-    init_Mode_Button_Mapping();
-    init_PID_LineEdit_Mapping();
-    init_PID_WR_Button_Mapping();
-    init_Camera();
+    initGUI();
+    initPage();
+    initSerialPort();
+    initModeButtonMapping();
+    initPIDLineEditMapping();
+    initPIDWRButtonMapping();
+    //QObject::connect(ui->cameraViewer->getImageProcessingThread(), SIGNAL(imageProcessorInstantiated()),
+    //                 this,SLOT(initCamera()));
+    /* TODO: check if ImageProcessor is initiated */
+    initCamera();
 }
 
 MainWindow::~MainWindow()
@@ -24,132 +27,138 @@ MainWindow::~MainWindow()
 }
 
 /* Initialization */
-void MainWindow::init_GUI()
+void MainWindow::initGUI()
 {
     QDesktopWidget desktop;
     QString stylesheet_Widget;
 
     /* Get Screen Resolution */
-    width_Factor = (double)(desktop.geometry().width()) / 1920.0 ;
-    height_Factor = (double)(desktop.geometry().height()) / 1080.0;
+    widthFactor = (double)(desktop.geometry().width()) / 1920.0 ;
+    heightFactor = (double)(desktop.geometry().height()) / 1080.0;
 
     /* Set GUI Layout */
     stylesheet_Widget = QString("\
-        QPushButton { \
-            font: bold %1px; color: white; \
-            border-radius: 0px; border: none; \
-            background-color: #224d77; \
-            min-width: %2px; max-width: %2px; \
-            min-height: %3px; max-height: %3px; \
-        } \
-        QPushButton:pressed { background-color: #1c4063; } \
-        QPushButton:hover:!pressed:!checked { background-color: #27598b; } \
-        QPushButton:checked { color: white; background-color: #2d669f; }\
-        ").arg(int(18 * height_Factor)).arg(int(250 * width_Factor)).arg(int(50 * height_Factor));
-    ui->btnControl->setStyleSheet(stylesheet_Widget);
-    ui->btnControl->setIconSize(QSize(int(50 * width_Factor), int(50 * height_Factor)));
+                                QPushButton { \
+                                    font: bold %1px; color: white; \
+                                    border-radius: 0px; border: none; \
+                                    background-color: #224d77; \
+                                    min-width: %2px; max-width: %2px; \
+                                    min-height: %3px; max-height: %3px; \
+                                } \
+                                QPushButton:pressed { background-color: #1c4063; } \
+                                QPushButton:hover:!pressed:!checked { background-color: #27598b; } \
+                                QPushButton:checked { color: white; background-color: #2d669f; }\
+                                ").arg(int(18 * heightFactor)).arg(int(250 * widthFactor)).arg(int(50 * heightFactor));
+                                ui->btnControl->setStyleSheet(stylesheet_Widget);
+            ui->btnControl->setIconSize(QSize(int(50 * widthFactor), int(50 * heightFactor)));
     ui->btnSettings->setStyleSheet(stylesheet_Widget);
-    ui->btnSettings->setIconSize(QSize(int(34 * width_Factor), int(34 * height_Factor)));
+    ui->btnSettings->setIconSize(QSize(int(34 * widthFactor), int(34 * heightFactor)));
 
     stylesheet_Widget = QString("\
-        QPushButton { \
-            border-radius: 0px; border: none; \
-            background-color: #113A61; \
-            min-width: %1px; max-width: %1px; \
-            min-height: %2px; max-height: %2px; \
-        } \
-        QPushButton:pressed { background-color: #113A61; } \
-        QPushButton:hover:!pressed { background-color: #113A61; }\
-        ").arg(int(150 * width_Factor)).arg(int(50 * height_Factor));
-    ui->btnGimbalIcon->setStyleSheet(stylesheet_Widget);
-    ui->btnGimbalIcon->setIconSize(QSize(int(40 * width_Factor), int(40 * height_Factor)));
+                                QPushButton { \
+                                    border-radius: 0px; border: none; \
+                                    background-color: #113A61; \
+                                    min-width: %1px; max-width: %1px; \
+                                    min-height: %2px; max-height: %2px; \
+                                } \
+                                QPushButton:pressed { background-color: #113A61; } \
+                                QPushButton:hover:!pressed { background-color: #113A61; }\
+                                ").arg(int(150 * widthFactor)).arg(int(50 * heightFactor));
+                                ui->btnGimbalIcon->setStyleSheet(stylesheet_Widget);
+            ui->btnGimbalIcon->setIconSize(QSize(int(40 * widthFactor), int(40 * heightFactor)));
 
     stylesheet_Widget = QString("\
-        QGroupBox { font: %1px; min-width: %2px; max-width: %2px; } \
-        QGroupBox::title { subcontrol-position: top center; } \
-        QLabel { font: bold %3px; } \
-        QComboBox { font: bold %3px; border: 2px solid #8c8c8c; border-radius: 5px; min-height: %4px;} \
-        QComboBox::drop-down { \
-            subcontrol-origin: padding; subcontrol-position: top right; width: 15px; \
-            border-left-width: 1px; border-left-color: darkgray; \
-            border-left-style: solid; border-top-right-radius: 3px; border-bottom-right-radius: 3px; \
-        } \
-        QComboBox::down-arrow{ image: url(:/files/images/arrow_down.png); height: 12px; width: 12px; } \
-        QComboBox::on { border: 2px solid #cc6600; } \
-        QComboBox:hover { border: 2px solid #cc6600; } \
-        QComboBox QAbstractItemView { \
-            border: 2px solid #cc6600; \
-            selection-background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #111, stop: 1 #333); \
-        } \
-        QPushButton { font: bold %3px; color: white; background-color: #224d77; border-radius: 5px; min-height: %5px;} \
-        QPushButton:pressed { background-color: #1c4063; } \
-        QPushButton:hover:!pressed { background-color: #27598b; } \
-        ").arg(int(16 * height_Factor)).arg(int(300 * height_Factor)).arg(int(18 * height_Factor)).arg(int(36 * height_Factor)).arg(int(40 * height_Factor));
-    ui->grpSerialPort->setStyleSheet(stylesheet_Widget);
+                                QGroupBox { font: %1px; min-width: %2px; max-width: %2px; } \
+                                QGroupBox::title { subcontrol-position: top center; } \
+                                QLabel { font: bold %3px; } \
+                                QComboBox { font: bold %3px; border: 2px solid #8c8c8c; border-radius: 5px; min-height: %4px;} \
+                                QComboBox::drop-down { \
+                                    subcontrol-origin: padding; subcontrol-position: top right; width: 15px; \
+                                    border-left-width: 1px; border-left-color: darkgray; \
+                                    border-left-style: solid; border-top-right-radius: 3px; border-bottom-right-radius: 3px; \
+                                } \
+                                QComboBox::down-arrow{ image: url(:/files/images/arrow_down.png); height: 12px; width: 12px; } \
+                                QComboBox::on { border: 2px solid #cc6600; } \
+                                QComboBox:hover { border: 2px solid #cc6600; } \
+                                QComboBox QAbstractItemView { \
+                                    border: 2px solid #cc6600; \
+                                    selection-background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #111, stop: 1 #333); \
+                                } \
+                                QPushButton { font: bold %3px; color: white; background-color: #224d77; border-radius: 5px; min-height: %5px;} \
+                                QPushButton:pressed { background-color: #1c4063; } \
+                                QPushButton:hover:!pressed { background-color: #27598b; } \
+                                ").arg(int(16 * heightFactor)).arg(int(300 * heightFactor)).arg(int(18 * heightFactor)).arg(int(36 * heightFactor)).arg(int(40 * heightFactor));
+                                ui->grpSerialPort->setStyleSheet(stylesheet_Widget);
+
+            stylesheet_Widget = QString("\
+                                        QGroupBox { font: %1px; } \
+                                        QGroupBox::title { subcontrol-position: top center; } \
+                                        QPushButton { font: bold %2px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: %3px; } \
+                                        QPushButton:pressed { background-color: #f2f2f2; } \
+                                        QPushButton:hover:!checked { border: 2px solid #cc6600; } \
+                                        QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; } \
+                                        ").arg(int(16 * heightFactor)).arg(int(18 * heightFactor)).arg(int(36 * heightFactor));
+                                        ui->grpModeControl->setStyleSheet(stylesheet_Widget);
+            ui->grpImageProcessing->setStyleSheet(stylesheet_Widget);
+    stylesheet_Widget = QString("\
+                                QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
+                                QPushButton:pressed { background-color: #1c4063; } \
+                                QPushButton:hover:!pressed { background-color: #27598b; } \
+                                ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
+
+            stylesheet_Widget = QString("\
+                                        QGroupBox { font: %1px; } \
+                                        QGroupBox::title { subcontrol-position: top center; } \
+                                        ").arg(int(16 * heightFactor));
+                                        ui->grpCamera->setStyleSheet(stylesheet_Widget);
+
+            stylesheet_Widget = QString("\
+                                        QPlainTextEdit { \
+                                            font: %1px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; \
+                                            min-height: %2px; max-height: %2px; min-width: %3px; max-width: %3px; \
+                                        } \
+                                        ").arg(int(14 * heightFactor)).arg(int(76 * heightFactor)).arg(int(298 * widthFactor));
+                                        ui->ptxtStatus_0->setStyleSheet(stylesheet_Widget);
+
+            stylesheet_Widget = QString("\
+                                        QGroupBox { font: %1px; } \
+                                        QGroupBox::title { subcontrol-position: top center; } \
+                                        QLabel { font: bold %2px; } \
+                                        QLineEdit { \
+                                            font: bold %2px; border: 2px solid #8f8f8f; border-radius: 5px; \
+                                            min-height: %3px; min-width: %4px; padding-left: 4px; \
+                                        } \
+                                        QLineEdit:focus { border: 2px solid #cc6600; } \
+                                        QLineEdit:hover { border: 2px solid #cc6600; } \
+                                        QPushButton { font: bold %2px; color: white; background-color: #224d77; border-radius: 5px; min-height: %5px; min-width: %6px} \
+                                        QPushButton:pressed { background-color: #1c4063; } \
+                                        QPushButton:hover:!pressed { background-color: #27598b; } \
+                                        QPlainTextEdit { font: %7px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; } \
+                                        ").arg(int(16 * heightFactor)).arg(int(18 * heightFactor)).arg(int(32 * heightFactor)).arg(int(112 * widthFactor))
+                                        .arg(int(40 * heightFactor)).arg(int(100 * widthFactor)).arg(int(14 * heightFactor));
+            ui->page_1->setStyleSheet(stylesheet_Widget);
 
     stylesheet_Widget = QString("\
-        QGroupBox { font: %1px; } \
-        QGroupBox::title { subcontrol-position: top center; } \
-        QPushButton { font: bold %2px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: %3px; } \
-        QPushButton:pressed { background-color: #f2f2f2; } \
-        QPushButton:hover:!checked { border: 2px solid #cc6600; } \
-        QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; } \
-        ").arg(int(16 * height_Factor)).arg(int(18 * height_Factor)).arg(int(36 * height_Factor));
-    ui->grpModeControl->setStyleSheet(stylesheet_Widget);
-    ui->grpImageProcessing->setStyleSheet(stylesheet_Widget);
+                            #grpActiveAxis { \
+                                border: 2px solid gray; border-radius: 10px; font: %1px; \
+                                min-width: %2px; max-width: %2px; \
+} \
+                                QPushButton { font: bold %3px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: %4px; color: black; } \
+                                QPushButton:pressed { background-color: #f2f2f2; } \
+                                QPushButton:hover:!checked { border: 2px solid #cc6600; } \
+                                QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; } \
+                                ").arg(int(16 * heightFactor)).arg(int(180 * widthFactor)).arg(int(18 * heightFactor)).arg(int(36 * heightFactor));
+                                ui->grpActiveAxis->setStyleSheet(stylesheet_Widget);
 
-    stylesheet_Widget = QString("\
-        QGroupBox { font: %1px; } \
-        QGroupBox::title { subcontrol-position: top center; } \
-        ").arg(int(16 * height_Factor));
-    ui->grpCamera->setStyleSheet(stylesheet_Widget);
-
-    stylesheet_Widget = QString("\
-        QPlainTextEdit { \
-            font: %1px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; \
-            min-height: %2px; max-height: %2px; min-width: %3px; max-width: %3px; \
-        } \
-        ").arg(int(14 * height_Factor)).arg(int(76 * height_Factor)).arg(int(298 * width_Factor));
-    ui->ptxtStatus_0->setStyleSheet(stylesheet_Widget);
-
-    stylesheet_Widget = QString("\
-        QGroupBox { font: %1px; } \
-        QGroupBox::title { subcontrol-position: top center; } \
-        QLabel { font: bold %2px; } \
-        QLineEdit { \
-            font: bold %2px; border: 2px solid #8f8f8f; border-radius: 5px; \
-            min-height: %3px; min-width: %4px; padding-left: 4px; \
-        } \
-        QLineEdit:focus { border: 2px solid #cc6600; } \
-        QLineEdit:hover { border: 2px solid #cc6600; } \
-        QPushButton { font: bold %2px; color: white; background-color: #224d77; border-radius: 5px; min-height: %5px; min-width: %6px} \
-        QPushButton:pressed { background-color: #1c4063; } \
-        QPushButton:hover:!pressed { background-color: #27598b; } \
-        QPlainTextEdit { font: %7px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; } \
-        ").arg(int(16 * height_Factor)).arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor))
-                                .arg(int(40 * height_Factor)).arg(int(100 * width_Factor)).arg(int(14 * height_Factor));
-    ui->page_1->setStyleSheet(stylesheet_Widget);
-
-    stylesheet_Widget = QString("\
-        #grpActiveAxis { \
-            border: 2px solid gray; border-radius: 10px; font: %1px; \
-            min-width: %2px; max-width: %2px; \
-        } \
-        QPushButton { font: bold %3px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: %4px; color: black; } \
-        QPushButton:pressed { background-color: #f2f2f2; } \
-        QPushButton:hover:!checked { border: 2px solid #cc6600; } \
-        QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; } \
-    ").arg(int(16 * height_Factor)).arg(int(180 * width_Factor)).arg(int(18 * height_Factor)).arg(int(36 * height_Factor));
-    ui->grpActiveAxis->setStyleSheet(stylesheet_Widget);
-
-    /* QPlainTextEdit Menu */
-    ui->ptxtStatus_0->setContextMenuPolicy(Qt::CustomContextMenu);
+            /* QPlainTextEdit Menu */
+            ui->ptxtStatus_0->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->ptxtStatus_1->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->ptxtStatus_0,SIGNAL(customContextMenuRequested(QPoint)), this,SLOT(show_ptxtStatus_Menu(QPoint)));
     connect(ui->ptxtStatus_1,SIGNAL(customContextMenuRequested(QPoint)), this,SLOT(show_ptxtStatus_Menu(QPoint)));
 }
 
-void MainWindow::init_Page()
+void MainWindow::initPage()
 {
     ui->btnControl->setChecked(true);
     ui->btnControl->setDisabled(true);
@@ -157,16 +166,16 @@ void MainWindow::init_Page()
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void MainWindow::init_Serial_Port()
+void MainWindow::initSerialPort()
 {
     /* for send all params function */
-    timer_Get_All_Params.setSingleShot(true);
-    timer_Get_All_Params.setInterval(50);
-    connect(&timer_Get_All_Params, SIGNAL(timeout()), this, SLOT(timer_Get_All_Params_timeout()));
+    timerGetAllParams.setSingleShot(true);
+    timerGetAllParams.setInterval(50);
+    connect(&timerGetAllParams, SIGNAL(timeout()), this, SLOT(timer_Get_All_Params_timeout()));
 
     /* combo box baudrate Serial Port */
     ui->cboBaudrate->setCurrentText("115200");
-    connect(&serial_Port, SIGNAL(done(ENUM_SP_STATUS_T,QByteArray,QByteArray)), this, SLOT(serial_port_done(ENUM_SP_STATUS_T,QByteArray,QByteArray)));
+    connect(&serialPort, SIGNAL(done(ENUM_SP_STATUS_T,QByteArray,QByteArray)), this, SLOT(serial_port_done(ENUM_SP_STATUS_T,QByteArray,QByteArray)));
 
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
@@ -181,28 +190,28 @@ void MainWindow::init_Serial_Port()
     timerSerialPort->start(1000);
 }
 
-void MainWindow::init_Mode_Button_Mapping()
+void MainWindow::initModeButtonMapping()
 {
     /* Defaut value */
-    setted_Mode = "";
+    settedMode = "";
 
     /* Mode Button */
-    mode_Mapper->setMapping(ui->btnHome, "HOME");
-    mode_Mapper->setMapping(ui->btnStop, "STOP");
-    mode_Mapper->setMapping(ui->btnManual, "MANUAL");
-    mode_Mapper->setMapping(ui->btnPointing, "POINTING");
-    mode_Mapper->setMapping(ui->btnTracking, "TRACKING");
+    modeMapper->setMapping(ui->btnHome, "HOME");
+    modeMapper->setMapping(ui->btnStop, "STOP");
+    modeMapper->setMapping(ui->btnManual, "MANUAL");
+    modeMapper->setMapping(ui->btnPointing, "POINTING");
+    modeMapper->setMapping(ui->btnTracking, "TRACKING");
 
-    connect(ui->btnHome, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
-    connect(ui->btnStop, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
-    connect(ui->btnManual, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
-    connect(ui->btnPointing, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
-    connect(ui->btnTracking, SIGNAL(clicked()), mode_Mapper, SLOT(map()));
+    connect(ui->btnHome, SIGNAL(clicked()), modeMapper, SLOT(map()));
+    connect(ui->btnStop, SIGNAL(clicked()), modeMapper, SLOT(map()));
+    connect(ui->btnManual, SIGNAL(clicked()), modeMapper, SLOT(map()));
+    connect(ui->btnPointing, SIGNAL(clicked()), modeMapper, SLOT(map()));
+    connect(ui->btnTracking, SIGNAL(clicked()), modeMapper, SLOT(map()));
 
-    connect(mode_Mapper, SIGNAL(mapped(const QString &)), SLOT(btnMode_clicked(const QString &)));
+    connect(modeMapper, SIGNAL(mapped(const QString &)), SLOT(btnMode_clicked(const QString &)));
 }
 
-void MainWindow::init_PID_LineEdit_Mapping()
+void MainWindow::initPIDLineEditMapping()
 {
     /* Acronym ------------------------------------------------------------------------------------
     **
@@ -242,25 +251,25 @@ void MainWindow::init_PID_LineEdit_Mapping()
         {
             for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
             {
-               leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
 
-               /* Set Default Value */
-               leditPID->setText("0.0");
-               setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = "0.0";
+                /* Set Default Value */
+                leditPID->setText("0.0");
+                settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx] = "0.0";
 
-               /* Set Double Validator */
-               leditPID->setValidator(pid_Validator);
+                /* Set Double Validator */
+                leditPID->setValidator(pid_Validator);
 
-               /* Set Mapping */
-               pid_Mapper->setMapping(leditPID, QString("%1%2%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-               connect(leditPID, SIGNAL(editingFinished()), pid_Mapper, SLOT(map()));
+                /* Set Mapping */
+                pid_Mapper->setMapping(leditPID, QString("%1%2%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                connect(leditPID, SIGNAL(editingFinished()), pid_Mapper, SLOT(map()));
             }
         }
     }
     connect(pid_Mapper, SIGNAL(mapped(const QString &)), SLOT(leditPID_editingFinished(const QString &)));
 }
 
-void MainWindow::init_PID_WR_Button_Mapping()
+void MainWindow::initPIDWRButtonMapping()
 {
     QSignalMapper *pid_WR_Mapper = new QSignalMapper(this);
 
@@ -276,9 +285,11 @@ void MainWindow::init_PID_WR_Button_Mapping()
     connect(pid_WR_Mapper, SIGNAL(mapped(const QString &)), SLOT(btnWritePID_clicked(const QString &)));
 }
 
-void MainWindow::init_Camera()
+void MainWindow::initCamera()
 {
-    //connect(ui->btnCameraCapture, SIGNAL(clicked()), this, SLOT(on_btnCameraCapture_clicked()));
+    QObject::connect(ui->cameraViewer->getImageProcessingThread()->getImageProcessor(), SIGNAL(velCmdUpdated(float,float)), this, SLOT(sendVelCmd(float,float)));
+    QObject::connect(ui->btnCameraCapture, SIGNAL(clicked(bool)), ui->cameraViewer->getImageProcessingThread()->getImageProcessor(),
+                     SLOT(startCapture(bool)));
 }
 
 /* Page Buttons */
@@ -303,39 +314,39 @@ void MainWindow::on_btnConnect_clicked()
 
     if (ui->btnConnect->text() == "Connect")
     {
-        if (serial_Port.connect_Port(ui->cboSerialPort->currentText(),
-                                      ui->cboBaudrate->currentText().toInt(NULL, 10)) == true)
+        if (serialPort.connectPort(ui->cboSerialPort->currentText(),
+                                     ui->cboBaudrate->currentText().toInt(NULL, 10)) == true)
         {
             ui->btnConnect->setText("Disconnect");
             stylesheet_Widget = QString("\
-                QPushButton { font: bold %1px; color: white; background-color: #774122; border-radius: 5px; min-height: %2px;} \
-                QPushButton:pressed { background-color: #63361c; } \
-                QPushButton:hover:!pressed { background-color: #8b4c27; } \
-                ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
-            ui->btnConnect->setStyleSheet(stylesheet_Widget);
-            status_Append_Text("- " + serial_Port.port_Name() + " is connected");
+                                        QPushButton { font: bold %1px; color: white; background-color: #774122; border-radius: 5px; min-height: %2px;} \
+                                        QPushButton:pressed { background-color: #63361c; } \
+                                        QPushButton:hover:!pressed { background-color: #8b4c27; } \
+                                        ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                        ui->btnConnect->setStyleSheet(stylesheet_Widget);
+                    statusAppendText("- " + serialPort.portName() + " is connected");
             timerSerialPort->stop();
-            get_All_Params();
+            getAllParams();
         }
     }
     else
     {
         ui->btnConnect->setText("Connect");
         stylesheet_Widget = QString("\
-            QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
-            QPushButton:pressed { background-color: #1c4063; } \
-            QPushButton:hover:!pressed { background-color: #27598b; } \
-            ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
-        ui->btnConnect->setStyleSheet(stylesheet_Widget);
-        serial_Port.disconnect_Port();
-        status_Append_Text("- " + serial_Port.port_Name() + " is disconnected");
+                                    QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
+                                    QPushButton:pressed { background-color: #1c4063; } \
+                                    QPushButton:hover:!pressed { background-color: #27598b; } \
+                                    ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                    ui->btnConnect->setStyleSheet(stylesheet_Widget);
+                serialPort.disconnectPort();
+        statusAppendText("- " + serialPort.portName() + " is disconnected");
         timerSerialPort->start(1000);
     }
 }
 
 void MainWindow::timerSerialPort_timeout()
 {
-    list_Serial_Port.clear();
+    listSerialPort.clear();
 
     /* Add new item */
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
@@ -345,13 +356,13 @@ void MainWindow::timerSerialPort_timeout()
             ui->cboSerialPort->addItem(info.portName());
             ui->cboSerialPort->setCurrentText(info.portName());
         }
-        list_Serial_Port.append(info.portName());
+        listSerialPort.append(info.portName());
     }
 
     /* Remove missing item */
     for (int i = 0; i < ui->cboSerialPort->count(); i++)
     {
-        if (list_Serial_Port.contains(ui->cboSerialPort->itemText(i)) == false)
+        if (listSerialPort.contains(ui->cboSerialPort->itemText(i)) == false)
         {
             ui->cboSerialPort->removeItem(i);
         }
@@ -364,7 +375,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
 
     if (status == SP_STATUS_NO_CONNECT)
     {
-        status_Append_Text("- No Serial Port is connected", Qt::red);
+        statusAppendText("- No Serial Port is connected", Qt::red);
         return;
     }
 
@@ -399,23 +410,23 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
         if (status != SP_STATUS_RESPONSE_OK)
         {
             /* back to setted mode */
-            button = qobject_cast<QPushButton *>(mode_Mapper->mapping(setted_Mode));
+            button = qobject_cast<QPushButton *>(modeMapper->mapping(settedMode));
             if (button != NULL) button->setChecked(true);
-            status_Append_Text("- Fail: Set Mode: " + cmd, Qt::red);
+            statusAppendText("- Fail: Set Mode: " + cmd, Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
             if (response.at(8) == 0x00)
             {
-                setted_Mode = cmd;
-                status_Append_Text("- Recv: Set Mode " + cmd + " Done", Qt::darkGreen);
+                settedMode = cmd;
+                statusAppendText("- Recv: Set Mode " + cmd + " Done", Qt::darkGreen);
             }
             else
             {
                 /* back to setted mode */
-                button = qobject_cast<QPushButton *>(mode_Mapper->mapping(setted_Mode));
+                button = qobject_cast<QPushButton *>(modeMapper->mapping(settedMode));
                 if (button != NULL) button->setChecked(true);
-                status_Append_Text("- Fail: Set Mode " + cmd, Qt::red);
+                statusAppendText("- Fail: Set Mode " + cmd, Qt::red);
             }
         }
     }
@@ -423,81 +434,81 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
     {
         if (status != SP_STATUS_RESPONSE_OK)
         {
-            status_Append_Text("- Fail: Get Mode", Qt::red);
+            statusAppendText("- Fail: Get Mode", Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
             switch (response.at(8))
             {
             case 0x01:
-                setted_Mode = "HOME";
+                settedMode = "HOME";
                 ui->btnHome->setChecked(true);
                 break;
             case 0x02:
-                setted_Mode = "STOP";
+                settedMode = "STOP";
                 ui->btnStop->setChecked(true);
                 break;
             case 0x03:
-                setted_Mode = "EMERGENCY_STOP";
+                settedMode = "EMERGENCY_STOP";
                 break;
             case 0x04:
                 if (response.at(9) == 0x00)
                 {
-                    setted_Mode = "MANUAL";
+                    settedMode = "MANUAL";
                     ui->btnManual->setChecked(true);
                 }
                 else if (response.at(9) == 0x02)
                 {
-                    setted_Mode = "POINTING";
+                    settedMode = "POINTING";
                     ui->btnPointing->setChecked(true);
                 }
                 else if (response.at(9) == 0x01)
                 {
-                    setted_Mode = "TRACKING";
+                    settedMode = "TRACKING";
                     ui->btnTracking->setChecked(true);
                 }
                 break;
             default:
                 break;
             }
-            status_Append_Text("- Recv: Get Mode", Qt::darkGreen);
+            statusAppendText("- Recv: Get Mode", Qt::darkGreen);
         }
     }
     else if ((msgID >= 0x06) && (msgID <= 0x08)) // set pos & vel
     {
-        QString message_status;
+        QString message_Status;
 
-        if (request.at(7) == 0x01) message_status = "AZ";
-        else if (request.at(7) == 0x02) message_status = "EL";
-        else message_status = "AZ & EL";
+        if (request.at(7) == 0x01) message_Status = "AZ";
+        else if (request.at(7) == 0x02) message_Status = "EL";
+        else message_Status = "AZ & EL";
 
-        if (msgID == 0x06) message_status.append(" Pos");
-        else if (msgID == 0x07) message_status.append(" Vel");
-        else if (msgID == 0x08) message_status.append(" Pos & Vel");
+        if (msgID == 0x06) message_Status.append(" Pos");
+        else if (msgID == 0x07) message_Status.append(" Vel");
+        else if (msgID == 0x08) message_Status.append(" Pos & Vel");
 
         if (status != SP_STATUS_RESPONSE_OK)
         {
-            status_Append_Text("- Fail: Set " + message_status, Qt::red);
+            statusAppendText("- Fail: Set " + message_Status, Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
             if (response.at(8) == 0x00)
-                status_Append_Text("- Recv: Set " + message_status + " Done", Qt::darkGreen);
+                statusAppendText("- Recv: Set " + message_Status + " Done", Qt::darkGreen);
             else
-                status_Append_Text("- Fail: Set " + message_status, Qt::red);
+                statusAppendText("- Fail: Set " + message_Status, Qt::red);
         }
     }
     else if (msgID == 0x09) //get pos
     {
-        QString message_status;
+        QString message_Status;
 
-        if (request.at(7) == 0x01) message_status = "AZ";
-        else if (request.at(7) == 0x02) message_status = "EL";
-        else message_status = "AZ & EL";
+        if (request.at(7) == 0x01) message_Status = "AZ";
+        else if (request.at(7) == 0x02) message_Status = "EL";
+        else message_Status = "AZ & EL";
 
         if ((status != SP_STATUS_RESPONSE_OK) || (response.size() < 12))
         {
-            status_Append_Text("- Fail: Get " + message_status + " Pos", Qt::red);
+            statusAppendText("- Fail: Get " + message_Status + " Pos", Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
@@ -513,55 +524,55 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             else if (response.at(7) == 0x02)
                 ui->leditELPos->setText(QString::number((double)curValue / 100.0, 'f', 2));
 
-            status_Append_Text("- Recv: Get " + message_status + " Pos Done" , Qt::darkGreen);
+            statusAppendText("- Recv: Get " + message_Status + " Pos Done" , Qt::darkGreen);
 
         }
     }
     else if ((msgID >= 0x0a) && (msgID <= 0x0e)) //set params pid
     {
         QLineEdit *leditPID;
-        QString ledit_Name, message_status;
+        QString ledit_Name, message_Status;
         int idx_Axis, idx_PID_Name, idx_Kx;
         static QString stylesheet_Widget_Not_Changed = QString("\
-            QLineEdit { \
-                font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
-                min-height: %2px; min-width: %3px; padding-left: 4px; \
-            } \
-            QLineEdit:focus { border: 2px solid #cc6600; } \
-            QLineEdit:hover { border: 2px solid #cc6600; } \
-        ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
+                                                               QLineEdit { \
+                                                                   font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
+                                                                   min-height: %2px; min-width: %3px; padding-left: 4px; \
+                                                               } \
+                                                               QLineEdit:focus { border: 2px solid #cc6600; } \
+                                                               QLineEdit:hover { border: 2px solid #cc6600; } \
+                                                               ").arg(int(18 * heightFactor)).arg(int(32 * heightFactor)).arg(int(112 * widthFactor));
 
-        idx_Axis = request.at(7) - 1;
-        idx_PID_Name = request.at(8) - 1;
+                                                               idx_Axis = request.at(7) - 1;
+                idx_PID_Name = request.at(8) - 1;
         idx_Kx = request.at(6) - 0x0a;
 
-        if (idx_Axis == 0) message_status = "AZ";
-        else if (idx_Axis == 1) message_status = "EL";
+        if (idx_Axis == 0) message_Status = "AZ";
+        else if (idx_Axis == 1) message_Status = "EL";
 
-        if (idx_PID_Name == 0) message_status += " Manual";
-        else if (idx_PID_Name == 1) message_status += " Pointing";
-        else if (idx_PID_Name == 2) message_status += " Tracking";
-        else if (idx_PID_Name == 3) message_status += " Velocity";
-        else if (idx_PID_Name == 4) message_status += " Current";
+        if (idx_PID_Name == 0) message_Status += " Manual";
+        else if (idx_PID_Name == 1) message_Status += " Pointing";
+        else if (idx_PID_Name == 2) message_Status += " Tracking";
+        else if (idx_PID_Name == 3) message_Status += " Velocity";
+        else if (idx_PID_Name == 4) message_Status += " Current";
 
-        if (idx_Kx == 0) message_status += " Kp";
-        else if (idx_Kx == 1) message_status += " Ki";
-        else if (idx_Kx == 2) message_status += " Kd";
-        else if (idx_Kx == 3) message_status += " Kff1";
-        else if (idx_Kx == 4) message_status += " Kff2";
+        if (idx_Kx == 0) message_Status += " Kp";
+        else if (idx_Kx == 1) message_Status += " Ki";
+        else if (idx_Kx == 2) message_Status += " Kd";
+        else if (idx_Kx == 3) message_Status += " Kff1";
+        else if (idx_Kx == 4) message_Status += " Kff2";
 
         ledit_Name = QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx);
 
         if (status != SP_STATUS_RESPONSE_OK)
         {
-            status_Append_Text("- Fail: Write " + message_status, Qt::red);
+            statusAppendText("- Fail: Write " + message_Status, Qt::red);
             return;
         }
         else
         {
             leditPID = ui->centralWidget->findChild<QLineEdit *>(ledit_Name);
-            status_Append_Text("- Recv: Write " + message_status, Qt::darkGreen);
-            setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] = leditPID->text();
+            statusAppendText("- Recv: Write " + message_Status, Qt::darkGreen);
+            settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx] = leditPID->text();
             leditPID->setStyleSheet(stylesheet_Widget_Not_Changed);
         }
     }
@@ -569,31 +580,31 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
     {
         int cur_Value = 0;
         QLineEdit *ledit_Kx;
-        QString message_status;
+        QString message_Status;
         int idx_Axis = (request.at(7) - 1);
         int idx_PID_Name = (request.at(8) - 1);
         static QString stylesheet_Widget_Not_Changed = QString("\
-            QLineEdit { \
-                font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
-                min-height: %2px; min-width: %3px; padding-left: 4px; \
-            } \
-            QLineEdit:focus { border: 2px solid #cc6600; } \
-            QLineEdit:hover { border: 2px solid #cc6600; } \
-        ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
+                                                               QLineEdit { \
+                                                                   font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
+                                                                   min-height: %2px; min-width: %3px; padding-left: 4px; \
+                                                               } \
+                                                               QLineEdit:focus { border: 2px solid #cc6600; } \
+                                                               QLineEdit:hover { border: 2px solid #cc6600; } \
+                                                               ").arg(int(18 * heightFactor)).arg(int(32 * heightFactor)).arg(int(112 * widthFactor));
 
-        if (idx_Axis == 0x00) message_status = "AZ";
-        else if (idx_Axis == 0x01) message_status = "EL";
-        else message_status = "AZ & EL";
+                                                               if (idx_Axis == 0x00) message_Status = "AZ";
+                else if (idx_Axis == 0x01) message_Status = "EL";
+        else message_Status = "AZ & EL";
 
-        if (idx_PID_Name == 0x00) message_status += " Manual";
-        else if (idx_PID_Name == 0x01) message_status += " Pointing";
-        else if (idx_PID_Name == 0x02) message_status += " Tracking";
-        else if (idx_PID_Name == 0x03) message_status += " Velocity";
-        else if (idx_PID_Name == 0x04) message_status += " Current";
+        if (idx_PID_Name == 0x00) message_Status += " Manual";
+        else if (idx_PID_Name == 0x01) message_Status += " Pointing";
+        else if (idx_PID_Name == 0x02) message_Status += " Tracking";
+        else if (idx_PID_Name == 0x03) message_Status += " Velocity";
+        else if (idx_PID_Name == 0x04) message_Status += " Current";
 
         if (status != SP_STATUS_RESPONSE_OK)
         {
-            status_Append_Text("- Fail: Get PID " + message_status, Qt::red);
+            statusAppendText("- Fail: Get PID " + message_Status, Qt::red);
         }
         else
         {
@@ -605,7 +616,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_0").arg(idx_Axis).arg(idx_PID_Name));
             ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
             ledit_Kx->setStyleSheet(stylesheet_Widget_Not_Changed);
-            setted_PID_Value[idx_Axis][idx_PID_Name][0] = ledit_Kx->text();
+            settedPIDValue[idx_Axis][idx_PID_Name][0] = ledit_Kx->text();
 
             /* Ki */
             cur_Value = (response.at(12) << 24) & 0x0ff000000;
@@ -615,7 +626,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_1").arg(idx_Axis).arg(idx_PID_Name));
             ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
             ledit_Kx->setStyleSheet(stylesheet_Widget_Not_Changed);
-            setted_PID_Value[idx_Axis][idx_PID_Name][1] = ledit_Kx->text();
+            settedPIDValue[idx_Axis][idx_PID_Name][1] = ledit_Kx->text();
 
             /* Kd */
             cur_Value = (response.at(16) << 24) & 0x0ff000000;
@@ -625,7 +636,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_2").arg(idx_Axis).arg(idx_PID_Name));
             ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
             ledit_Kx->setStyleSheet(stylesheet_Widget_Not_Changed);
-            setted_PID_Value[idx_Axis][idx_PID_Name][2] = ledit_Kx->text();
+            settedPIDValue[idx_Axis][idx_PID_Name][2] = ledit_Kx->text();
 
             /* Kff1 */
             cur_Value = (response.at(20) << 24) & 0x0ff000000;
@@ -635,7 +646,7 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_3").arg(idx_Axis).arg(idx_PID_Name));
             ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
             ledit_Kx->setStyleSheet(stylesheet_Widget_Not_Changed);
-            setted_PID_Value[idx_Axis][idx_PID_Name][3] = ledit_Kx->text();
+            settedPIDValue[idx_Axis][idx_PID_Name][3] = ledit_Kx->text();
 
             /* Kff2 */
             cur_Value = (response.at(24) << 24) & 0x0ff000000;
@@ -645,64 +656,64 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             ledit_Kx =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_4").arg(idx_Axis).arg(idx_PID_Name));
             ledit_Kx->setText(QString::number((double)cur_Value / 1000000.0, 'g', 6));
             ledit_Kx->setStyleSheet(stylesheet_Widget_Not_Changed);
-            setted_PID_Value[idx_Axis][idx_PID_Name][4] = ledit_Kx->text();
+            settedPIDValue[idx_Axis][idx_PID_Name][4] = ledit_Kx->text();
 
-            status_Append_Text("- Recv: Get PID " + message_status, Qt::darkGreen);
+            statusAppendText("- Recv: Get PID " + message_Status, Qt::darkGreen);
         }
 
     }
     else if (msgID == 0x10) //set active axis
     {
-        QString message_status;
+        QString message_Status;
         bool *p_Status_Memory;
         QPushButton *button;
 
         if (request.at(7) == 0x01)
         {
             button = ui->btnAZActive;
-            message_status = "AZ";
-            p_Status_Memory = &setted_Active_Value[0];
+            message_Status = "AZ";
+            p_Status_Memory = &settedActiveValue[0];
         }
         else //if (request.at(7) == 0x02)
         {
             button = ui->btnELActive;
-            message_status = "EL";
-            p_Status_Memory = &setted_Active_Value[1];
+            message_Status = "EL";
+            p_Status_Memory = &settedActiveValue[1];
         }
 
-        if (request.at(8) == 0x00) message_status.append(" Disable");
-        else if (request.at(8) == 0x01) message_status.append(" Enable");
+        if (request.at(8) == 0x00) message_Status.append(" Disable");
+        else if (request.at(8) == 0x01) message_Status.append(" Enable");
 
         if (status != SP_STATUS_RESPONSE_OK)
         {
             button->setChecked(*p_Status_Memory);
-            status_Append_Text("- Fail: Set " + message_status, Qt::red);
+            statusAppendText("- Fail: Set " + message_Status, Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
             if (response.at(8) == 0x00)
             {
                 *p_Status_Memory = request.at(8);
-                status_Append_Text("- Recv: Set " + message_status + " Done", Qt::darkGreen);
+                statusAppendText("- Recv: Set " + message_Status + " Done", Qt::darkGreen);
             }
             else
             {
                 button->setChecked(*p_Status_Memory);
-                status_Append_Text("- Fail: Set " + message_status, Qt::red);
+                statusAppendText("- Fail: Set " + message_Status, Qt::red);
             }
         }
     }
     else if (msgID == 0x11) //get active axis
     {
-        QString message_status;
+        QString message_Status;
 
-        if (request.at(7) == 0x01) message_status = "AZ";
-        else if (request.at(7) == 0x02) message_status = "EL";
-        else message_status = "AZ & EL";
+        if (request.at(7) == 0x01) message_Status = "AZ";
+        else if (request.at(7) == 0x02) message_Status = "EL";
+        else message_Status = "AZ & EL";
 
         if (status != SP_STATUS_RESPONSE_OK)
         {
-            status_Append_Text("- Fail: Get Active " + message_status, Qt::red);
+            statusAppendText("- Fail: Get Active " + message_Status, Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
         {
@@ -711,12 +722,12 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
                 if (response.at(8) == 0x01)
                 {
                     ui->btnAZActive->setChecked(true);
-                    setted_Active_Value[0] = true;
+                    settedActiveValue[0] = true;
                 }
                 else
                 {
                     ui->btnAZActive->setChecked(false);
-                    setted_Active_Value[0] = false;
+                    settedActiveValue[0] = false;
                 }
             }
             else if (response.at(7) == 0x02) //EL
@@ -724,46 +735,46 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
                 if (response.at(8) == 0x01)
                 {
                     ui->btnELActive->setChecked(true);
-                    setted_Active_Value[1] = true;
+                    settedActiveValue[1] = true;
                 }
                 else
                 {
                     ui->btnELActive->setChecked(false);
-                    setted_Active_Value[1] = false;
+                    settedActiveValue[1] = false;
                 }
             }
-            status_Append_Text("- Recv: Get Active " + message_status, Qt::darkGreen);
+            statusAppendText("- Recv: Get Active " + message_Status, Qt::darkGreen);
         }
     }
 
 }
 
 /* Load All Params */
-bool MainWindow::get_All_Params()
+bool MainWindow::getAllParams()
 {
-    cmd_Counter = 0;
-    timer_Get_All_Params.start();
+    cmdCounter = 0;
+    timerGetAllParams.start();
     return true;
 }
 
 void MainWindow::timer_Get_All_Params_timeout()
 {
-    serial_Port.send_Cmd_Non_Blocking(stru_GB_CMD[cmd_Counter].cmd_msgID, stru_GB_CMD[cmd_Counter].cmd_payload);
-    cmd_Counter++;
-    if (cmd_Counter >= 11)
-        cmd_Counter = 0;
+    serialPort.sendCmdNonBlocking(struGB_CMD[cmdCounter].cmd_msgID, struGB_CMD[cmdCounter].cmd_payload);
+    cmdCounter++;
+    if (cmdCounter >= 11)
+        cmdCounter = 0;
     else
-        timer_Get_All_Params.start();
+        timerGetAllParams.start();
 }
 
 /* Status Text for ptxtStatus_x */
-void MainWindow::status_Append_Text(const QString &text)
+void MainWindow::statusAppendText(const QString &text)
 {
     ui->ptxtStatus_0->appendPlainText(text);
     ui->ptxtStatus_1->appendPlainText(text);
 }
 
-void MainWindow::status_Append_Text(const QString &text, QColor color)
+void MainWindow::statusAppendText(const QString &text, QColor color)
 {
     QTextCharFormat tf;
 
@@ -837,10 +848,10 @@ void MainWindow::btnMode_clicked(const QString &cmd)
         request_Data.append((char)0x01);
     }
 
-    status_Append_Text("- Send: Set Mode " + cmd);
+    statusAppendText("- Send: Set Mode " + cmd);
 
     /* Send */
-    serial_Port.send_Cmd_Non_Blocking(msgID, request_Data);
+    serialPort.sendCmdNonBlocking(msgID, request_Data);
 }
 
 /* PID LineEdit & Write Button */
@@ -849,29 +860,29 @@ void MainWindow::leditPID_editingFinished(const QString &pid_Name)
     QLineEdit *ledit_Sender;
     int idx_Axis, idx_PID_Name, idx_Kx;
     static QString stylesheet_Widget_Changed = QString("\
-        QLineEdit { \
-            font: bold %1px; border: 2px solid #b3b300; border-radius: 5px; \
-            min-height: %2px; min-width: %3px; padding-left: 4px; color: #b3b300; \
-        } \
-        QLineEdit:focus { border: 2px solid #cccc00; } \
-        QLineEdit:hover { border: 2px solid #cccc00; } \
-    ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
-   static QString stylesheet_Widget_Not_Changed = QString("\
-       QLineEdit { \
-           font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
-           min-height: %2px; min-width: %3px; padding-left: 4px; \
-       } \
-       QLineEdit:focus { border: 2px solid #cc6600; } \
-       QLineEdit:hover { border: 2px solid #cc6600; } \
-   ").arg(int(18 * height_Factor)).arg(int(32 * height_Factor)).arg(int(112 * width_Factor));
+                                                       QLineEdit { \
+                                                           font: bold %1px; border: 2px solid #b3b300; border-radius: 5px; \
+                                                           min-height: %2px; min-width: %3px; padding-left: 4px; color: #b3b300; \
+                                                       } \
+                                                       QLineEdit:focus { border: 2px solid #cccc00; } \
+                                                       QLineEdit:hover { border: 2px solid #cccc00; } \
+                                                       ").arg(int(18 * heightFactor)).arg(int(32 * heightFactor)).arg(int(112 * widthFactor));
+                                                       static QString stylesheet_Widget_Not_Changed = QString("\
+                                                                                                              QLineEdit { \
+                                                                                                                  font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
+                                                                                                                  min-height: %2px; min-width: %3px; padding-left: 4px; \
+                                                                                                              } \
+                                                                                                              QLineEdit:focus { border: 2px solid #cc6600; } \
+                                                                                                              QLineEdit:hover { border: 2px solid #cc6600; } \
+                                                                                                              ").arg(int(18 * heightFactor)).arg(int(32 * heightFactor)).arg(int(112 * widthFactor));
 
-    idx_Axis = pid_Name.at(0).digitValue();
-    idx_PID_Name = pid_Name.at(1).digitValue();
-    idx_Kx = pid_Name.at(2).digitValue();
+                                                                                                              idx_Axis = pid_Name.at(0).digitValue();
+            idx_PID_Name = pid_Name.at(1).digitValue();
+            idx_Kx = pid_Name.at(2).digitValue();
 
     ledit_Sender =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
 
-    if (setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx] != ledit_Sender->text())
+    if (settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx] != ledit_Sender->text())
     {
         ledit_Sender->setStyleSheet(stylesheet_Widget_Changed);
     }
@@ -890,7 +901,7 @@ void MainWindow::btnWritePID_clicked(const QString &name)
     bool first_Send_Flag = false;
     int idx_PID_Name_Min = 0, idx_PID_Name_Max = 0;
 
-    QMutexLocker locker(&mutex_PID_WR);
+    QMutexLocker locker(&mutexPIDWR);
 
     if (name == "POSITION")
     {
@@ -918,10 +929,10 @@ void MainWindow::btnWritePID_clicked(const QString &name)
                 //qDebug() << leditPID->text();
                 if (leditPID->text() == NULL)
                 {
-                    status_Append_Text(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
-                    leditPID->setText(setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx]);
+                    statusAppendText(QString("- Restore Current Value (%1_%2_%3)").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
+                    leditPID->setText(settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx]);
                 }
-                if (leditPID->text() != setted_PID_Value[idx_Axis][idx_PID_Name][idx_Kx])
+                if (leditPID->text() != settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx])
                 {
                     request_Data.clear();
                     request_Data.append((char)(1 + idx_Axis));
@@ -936,9 +947,9 @@ void MainWindow::btnWritePID_clicked(const QString &name)
                     if (first_Send_Flag == false)
                     {
                         first_Send_Flag = true;
-                        status_Append_Text("- Send: Write " + name + " Loop");
+                        statusAppendText("- Send: Write " + name + " Loop");
                     }
-                    serial_Port.send_Cmd_Non_Blocking(0x0a + idx_Kx, request_Data);
+                    serialPort.sendCmdNonBlocking(0x0a + idx_Kx, request_Data);
                 }
             }
         }
@@ -972,8 +983,8 @@ void MainWindow::on_btnAZSetPos_clicked()
             request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
             request_Data.append((char)((scaled_Value) & 0x0ff));
 
-            status_Append_Text("- Send: Set AZ Pos");
-            serial_Port.send_Cmd_Non_Blocking(0x06, request_Data);
+            statusAppendText("- Send: Set AZ Pos");
+            serialPort.sendCmdNonBlocking(0x06, request_Data);
         }
     }
 }
@@ -993,19 +1004,19 @@ void MainWindow::on_btnAZSetVel_clicked()
         request_Data.append((char)0x01);
 
         scaled_Value = qint32 (ui->leditAZVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditAZVel->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//        }
-//        else
+        //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
+        //        {
+        //            QToolTip::showText(ui->leditAZVel->mapToGlobal(QPoint()), "Range: (-180, 180)");
+        //        }
+        //        else
         {
             request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
             request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
             request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
             request_Data.append((char)((scaled_Value) & 0x0ff));
 
-            status_Append_Text("- Send: Set AZ Vel");
-            serial_Port.send_Cmd_Non_Blocking(0x07, request_Data);
+            statusAppendText("- Send: Set AZ Vel");
+            serialPort.sendCmdNonBlocking(0x07, request_Data);
 
         }
     }
@@ -1041,18 +1052,18 @@ void MainWindow::on_btnAZSetBoth_clicked()
         request_Data.append((char)((scaled_Value) & 0x0ff));
 
         scaled_Value = qint32 (ui->leditAZVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//            return;
-//        }
+        //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
+        //        {
+        //            QToolTip::showText(ui->leditAZPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
+        //            return;
+        //        }
         request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
         request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
         request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
         request_Data.append((char)((scaled_Value) & 0x0ff));
 
-        status_Append_Text("- Send: Set AZ Pos Vel");
-        serial_Port.send_Cmd_Non_Blocking(0x08, request_Data);
+        statusAppendText("- Send: Set AZ Pos Vel");
+        serialPort.sendCmdNonBlocking(0x08, request_Data);
     }
 }
 
@@ -1062,8 +1073,8 @@ void MainWindow::on_btnAZGetPos_clicked()
 
     request_Data.clear();
     request_Data.append((char)0x01);
-    status_Append_Text("- Send: Get AZ Pos");
-    serial_Port.send_Cmd_Non_Blocking(0x09, request_Data);
+    statusAppendText("- Send: Get AZ Pos");
+    serialPort.sendCmdNonBlocking(0x09, request_Data);
 }
 
 void MainWindow::on_btnELSetPos_clicked()
@@ -1092,8 +1103,8 @@ void MainWindow::on_btnELSetPos_clicked()
             request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
             request_Data.append((char)((scaled_Value) & 0x0ff));
 
-            status_Append_Text("- Send: Set EL Pos");
-            serial_Port.send_Cmd_Non_Blocking(0x06, request_Data);
+            statusAppendText("- Send: Set EL Pos");
+            serialPort.sendCmdNonBlocking(0x06, request_Data);
         }
     }
 }
@@ -1113,19 +1124,19 @@ void MainWindow::on_btnELSetVel_clicked()
         request_Data.append((char)0x02);
 
         scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//        }
-//        else
+        //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
+        //        {
+        //            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
+        //        }
+        //        else
         {
             request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
             request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
             request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
             request_Data.append((char)((scaled_Value) & 0x0ff));
 
-            status_Append_Text("- Send: Set EL Vel");
-            serial_Port.send_Cmd_Non_Blocking(0x07, request_Data);
+            statusAppendText("- Send: Set EL Vel");
+            serialPort.sendCmdNonBlocking(0x07, request_Data);
         }
     }
 }
@@ -1160,18 +1171,18 @@ void MainWindow::on_btnELSetBoth_clicked()
         request_Data.append((char)((scaled_Value) & 0x0ff));
 
         scaled_Value = qint32 (ui->leditELVel->text().toDouble() * 100);
-//        if ((scaled_Value > 18000) || (scaled_Value < -18000))
-//        {
-//            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
-//            return;
-//        }
+        //        if ((scaled_Value > 18000) || (scaled_Value < -18000))
+        //        {
+        //            QToolTip::showText(ui->leditELPos->mapToGlobal(QPoint()), "Range: (-180, 180)");
+        //            return;
+        //        }
         request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
         request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
         request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
         request_Data.append((char)((scaled_Value) & 0x0ff));
 
-        status_Append_Text("- Send: Set EL Pos Vel");
-        serial_Port.send_Cmd_Non_Blocking(0x08, request_Data);
+        statusAppendText("- Send: Set EL Pos Vel");
+        serialPort.sendCmdNonBlocking(0x08, request_Data);
     }
 }
 
@@ -1181,15 +1192,15 @@ void MainWindow::on_btnELGetPos_clicked()
 
     request_Data.clear();
     request_Data.append((char)0x02);
-    status_Append_Text("- Send: Get EL Pos");
-    serial_Port.send_Cmd_Non_Blocking(0x09, request_Data);
+    statusAppendText("- Send: Get EL Pos");
+    serialPort.sendCmdNonBlocking(0x09, request_Data);
 }
 
 /* Active Axis */
 void MainWindow::on_btnAZActive_clicked(bool checked)
 {
     QByteArray request_Data;
-    QString message_status;
+    QString message_Status;
 
     request_Data.clear();
     request_Data.append((char)0x01); //Axis AZ
@@ -1197,23 +1208,23 @@ void MainWindow::on_btnAZActive_clicked(bool checked)
 
     if (checked == true)
     {
-        message_status = "- Send: Set AZ Enable";
+        message_Status = "- Send: Set AZ Enable";
         request_Data.append((char)0x01); //enable
     }
     else
     {
-        message_status = "- Send: Set AZ Disable";
+        message_Status = "- Send: Set AZ Disable";
         request_Data.append((char)0x00); //disable
     }
 
-    status_Append_Text(message_status);
-    serial_Port.send_Cmd_Non_Blocking(0x10, request_Data);
+    statusAppendText(message_Status);
+    serialPort.sendCmdNonBlocking(0x10, request_Data);
 }
 
 void MainWindow::on_btnELActive_clicked(bool checked)
 {
     QByteArray request_Data;
-    QString message_status;
+    QString message_Status;
 
     request_Data.clear();
     request_Data.append((char)0x02); //Axis EL
@@ -1221,17 +1232,17 @@ void MainWindow::on_btnELActive_clicked(bool checked)
 
     if (checked == true)
     {
-        message_status = "- Send: Set EL Enable";
+        message_Status = "- Send: Set EL Enable";
         request_Data.append((char)0x01); //enable
     }
     else
     {
-        message_status = "- Send: Set EL Disable";
+        message_Status = "- Send: Set EL Disable";
         request_Data.append((char)0x00); //disable
     }
 
-    status_Append_Text(message_status);
-    serial_Port.send_Cmd_Non_Blocking(0x10, request_Data);
+    statusAppendText(message_Status);
+    serialPort.sendCmdNonBlocking(0x10, request_Data);
 }
 
 void MainWindow::on_btnCameraCapture_clicked()
@@ -1240,24 +1251,54 @@ void MainWindow::on_btnCameraCapture_clicked()
 
     if (ui->btnCameraCapture->text() == "Start Capture")
     {
-        ui->cameraViewer->start_capture();
+        //ui->cameraViewer->start_capture();
         ui->btnCameraCapture->setText("Stop Capture");
         stylesheet_Widget = QString("\
                                     QPushButton { font: bold %1px; color: white; background-color: #774122; border-radius: 5px; min-height: %2px;} \
                                     QPushButton:pressed { background-color: #63361c; } \
                                     QPushButton:hover:!pressed { background-color: #8b4c27; } \
-                                    ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
-        ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
+                                    ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                    ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
     }
     else
     {
-        ui->cameraViewer->stop_capture();
+        //ui->cameraViewer->stop_capture();
         ui->btnCameraCapture->setText("Start Capture");
         stylesheet_Widget = QString("\
-            QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
-            QPushButton:pressed { background-color: #1c4063; } \
-            QPushButton:hover:!pressed { background-color: #27598b; } \
-            ").arg(int(18 * height_Factor)).arg(int(40 * height_Factor));
-        ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
+                                    QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
+                                    QPushButton:pressed { background-color: #1c4063; } \
+                                    QPushButton:hover:!pressed { background-color: #27598b; } \
+                                    ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                    ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
+    }
+}
+
+void MainWindow::sendVelCmd(float az_Vel, float el_Vel)
+{
+    if (ui->btnConnect->text() == "Disconnect")
+    {
+        QByteArray request_Data;
+        QString message_Status;
+        qint32 az_Data, el_Data;
+
+        request_Data.clear();
+        request_Data.append((char)0x03);//both axes
+
+        message_Status = "- Send vel cmd";
+
+        az_Data = quint32 (az_Vel * 100);
+        request_Data.append((char)((az_Data >> 24) & 0x0ff));
+        request_Data.append((char)((az_Data >> 16) & 0x0ff));
+        request_Data.append((char)((az_Data >> 8) & 0x0ff));
+        request_Data.append((char)((az_Data) & 0x0ff));
+
+        el_Data = quint32 (el_Vel * 100);
+        request_Data.append((char)((el_Data >> 24) & 0x0ff));
+        request_Data.append((char)((el_Data >> 16) & 0x0ff));
+        request_Data.append((char)((el_Data >> 8) & 0x0ff));
+        request_Data.append((char)((el_Data) & 0x0ff));
+
+        statusAppendText(message_Status);
+        serialPort.sendCmdNonBlocking(0x07, request_Data);
     }
 }

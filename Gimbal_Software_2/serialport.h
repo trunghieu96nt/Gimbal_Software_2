@@ -24,30 +24,30 @@ class SerialPort : public QObject
 public:
     explicit SerialPort(QObject *parent = nullptr);
 
-    QString port_Name() {return sp_Port_Name;}
-    bool connect_Port(const QString &port_Name, qint32 baudrate);
-    void disconnect_Port();
+    QString portName() {return spPortName;}
+    bool connectPort(const QString &portName, qint32 baudrate);
+    void disconnectPort();
 
     void transaction(const QByteArray &request);
-    void transaction_In_Queue();
-    ENUM_SP_STATUS_T send_Cmd_Blocking(char msgID, const QByteArray &payload, int wait_Timeout, QByteArray &response);
-    void send_Cmd_Non_Blocking(char msgID, const QByteArray &payload);
+    void transactionInQueue();
+    ENUM_SP_STATUS_T sendCmdBlocking(char msgID, const QByteArray &payload, int wait_Timeout, QByteArray &response);
+    void sendCmdNonBlocking(char msgID, const QByteArray &payload);
 
 signals:
     void done(ENUM_SP_STATUS_T status, const QByteArray &request, const QByteArray &response);
 
 private slots:
-    void timer_Send_Timeout();
-    void serial_readyRead();
+    void timerSendTimeout();
+    void serialReadyRead();
 
 private:
-    QQueue<QByteArray> request_Queue;
+    QQueue<QByteArray> requestQueue;
     QSerialPort serial;
-    QString sp_Port_Name;
-    qint32 sp_Baudrate;
-    QMutex mutex_Send;
-    QTimer timer_Send;
-    QByteArray current_Request, data_Serial_Port;
+    QString spPortName;
+    qint32 spBaudrate;
+    QMutex mutexSend;
+    QTimer timerSend;
+    QByteArray currentRequest, dataSerialPort;
 };
 
 #endif // SERIALPORT_H

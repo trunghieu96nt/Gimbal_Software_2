@@ -4,6 +4,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_2_0>
 #include <QMutex>
+#include <QMouseEvent>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
@@ -16,15 +17,17 @@ class CQtOpenCVViewerGl : public QOpenGLWidget, protected QOpenGLFunctions_2_0
 public:
     explicit CQtOpenCVViewerGl(QWidget *parent = 0);
     virtual ~CQtOpenCVViewerGl();
-    void set_framerate(double framerate);
-    void capture_frame();
+    void setFramerate(double framerate);
+//    void capture_frame();
+    ImageProcessingThread* getImageProcessingThread();
+
 signals:
     void    imageSizeChanged( int outW, int outH ); /// Used to resize the image outside the widget
 
 public slots:
-    void start_capture();
-    void stop_capture();
-    void connect_image_processor_to_display_method();
+    void startCapture();
+    void stopCapture();
+    void connectImageProcessorToDisplayMethod();
     bool    showImage(); /// Used to set the image to be viewed
 
 protected:
@@ -35,12 +38,15 @@ protected:
     void        updateScene();
     void        renderImage();
 
+    virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mouseReleaseEvent(QMouseEvent *event);
+
 private:
     ImageProcessingThread *image_processing_thread;
     QImage      mRenderQtImg;           /// Qt image to be rendered
     QImage      mResizedImg;
     cv::Mat     mOrigImage;             /// original OpenCV image to be shown
-    cv::Mat     shared_cv_image;
+    cv::Mat     *sharedCVImage;
     QColor      mBgColor;		/// Background color
 
     float       mImgRatio;             /// height/width ratio
@@ -51,10 +57,13 @@ private:
     int mRenderPosY;
 
     QMutex *draw_mutex;
+    QPointF bbox_first_point;
+    QPointF bbox_second_point;
 
     void recalculatePosition();
-    void start_image_processing_thread();
-    void stop_image_processing_thread();
+    void startImageProcessingThread();
+    void stopImageProcessingThread();
+    Point_<double> convert(const QPointF & pt);
 };
 
 #endif // CQTOPENCVVIEWERGL_H

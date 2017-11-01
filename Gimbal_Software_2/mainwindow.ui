@@ -523,13 +523,15 @@ QPushButton:checked { color: white; border: 2px solid #224d77; background-color:
               <item>
                <widget class="QPushButton" name="btnCameraCapture">
                 <property name="styleSheet">
-                 <string notr="true">QPushButton { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: 36px; }
-QPushButton:pressed { background-color: #f2f2f2; }
-QPushButton:hover:!checked { border: 2px solid #cc6600; }
-QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; }</string>
+                 <string notr="true">QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; }
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed { background-color: #27598b; }</string>
                 </property>
                 <property name="text">
                  <string>Start Capture</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -566,10 +568,10 @@ QGroupBox::title { subcontrol-position: top center; }</string>
               <widget class="CQtOpenCVViewerGl" name="cameraViewer">
                <property name="geometry">
                 <rect>
-                 <x>0</x>
+                 <x>10</x>
                  <y>20</y>
-                 <width>1280</width>
-                 <height>720</height>
+                 <width>640</width>
+                 <height>480</height>
                 </rect>
                </property>
               </widget>
