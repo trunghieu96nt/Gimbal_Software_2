@@ -15,10 +15,17 @@ MainWindow::MainWindow(QWidget *parent) :
     initModeButtonMapping();
     initPIDLineEditMapping();
     initPIDWRButtonMapping();
-    //QObject::connect(ui->cameraViewer->getImageProcessingThread(), SIGNAL(imageProcessorInstantiated()),
-    //                 this,SLOT(initCamera()));
+    initFile();
     /* TODO: check if ImageProcessor is initiated */
-    initCamera();
+    //    if (ui->cameraViewer->getImageProcessingThread()->getImageProcessor() != NULL)
+    //    {
+    //        initImageProcessor();
+    //    }
+    //    else
+    //    {
+    QObject::connect(ui->cameraViewer->getImageProcessingThread(), SIGNAL(imageProcessorInstantiated()),
+                     this,SLOT(initImageProcessor()));
+    //    }
 }
 
 MainWindow::~MainWindow()
@@ -285,11 +292,33 @@ void MainWindow::initPIDWRButtonMapping()
     connect(pid_WR_Mapper, SIGNAL(mapped(const QString &)), SLOT(btnWritePID_clicked(const QString &)));
 }
 
-void MainWindow::initCamera()
+void MainWindow::initImageProcessor()
 {
     QObject::connect(ui->cameraViewer->getImageProcessingThread()->getImageProcessor(), SIGNAL(velCmdUpdated(float,float)), this, SLOT(sendVelCmd(float,float)));
     QObject::connect(ui->btnCameraCapture, SIGNAL(clicked(bool)), ui->cameraViewer->getImageProcessingThread()->getImageProcessor(),
                      SLOT(startCapture(bool)));
+}
+
+void MainWindow::initFile()
+{
+    //    QFile file("pidTrackingParams.txt");
+    //    bool isFileExisted = file.exists();
+    //    if (!file.open(QIODevice::ReadWrite))
+    //    {
+    //        QMessageBox::information(this, tr("Unable to open PID tracking params file"),
+    //                                 file.errorString());
+    //        return;
+    //    }
+    //    if (isFileExisted)
+    //    {
+    //        QDataStream dataStream(&file);
+    //        dataStream.setVersion(QDataStream::Qt_5_9);
+    //        this->pidTrackingParams.clear();
+    //        this->pidTrackingParams << dataStream;
+    //        //parse data -> send to imageProcessor
+    //        QDebug << this->pidTrackingParams;
+    //    }
+    //    file.close();
 }
 
 /* Page Buttons */
@@ -315,7 +344,7 @@ void MainWindow::on_btnConnect_clicked()
     if (ui->btnConnect->text() == "Connect")
     {
         if (serialPort.connectPort(ui->cboSerialPort->currentText(),
-                                     ui->cboBaudrate->currentText().toInt(NULL, 10)) == true)
+                                   ui->cboBaudrate->currentText().toInt(NULL, 10)) == true)
         {
             ui->btnConnect->setText("Disconnect");
             stylesheet_Widget = QString("\
@@ -923,6 +952,7 @@ void MainWindow::btnWritePID_clicked(const QString &name)
     {
         for (int idx_PID_Name = idx_PID_Name_Min; idx_PID_Name < idx_PID_Name_Max; idx_PID_Name++)
         {
+
             for (int idx_Kx = 0; idx_Kx < 5; idx_Kx++)
             {
                 leditPID =  ui->centralWidget->findChild<QLineEdit *>(QString("leditPID_%1_%2_%3").arg(idx_Axis).arg(idx_PID_Name).arg(idx_Kx));
@@ -934,22 +964,41 @@ void MainWindow::btnWritePID_clicked(const QString &name)
                 }
                 if (leditPID->text() != settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx])
                 {
-                    request_Data.clear();
-                    request_Data.append((char)(1 + idx_Axis));
-                    request_Data.append((char)(1 + idx_PID_Name));
-
-                    scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
-                    request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
-                    request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
-                    request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
-                    request_Data.append((char)((scaled_Value) & 0x0ff));
-
-                    if (first_Send_Flag == false)
+                    if (idx_PID_Name == 2)
                     {
-                        first_Send_Flag = true;
-                        statusAppendText("- Send: Write " + name + " Loop");
+                        static QString stylesheet_Widget_Not_Changed = QString("\
+                                                                               QLineEdit { \
+                                                                                   font: bold %1px; border: 2px solid #8f8f8f; border-radius: 5px; \
+                                                                                   min-height: %2px; min-width: %3px; padding-left: 4px; \
+                                                                               } \
+                                                                               QLineEdit:focus { border: 2px solid #cc6600; } \
+                                                                               QLineEdit:hover { border: 2px solid #cc6600; } \
+                                                                               ").arg(int(18 * heightFactor)).arg(int(32 * heightFactor)).arg(int(112 * widthFactor));
+                        ui->cameraViewer->getImageProcessingThread()->getImageProcessor()->setPIDTrackingParam(idx_Axis,idx_Kx,leditPID->text().toDouble());
+                        //leditPID = ui->centralWidget->findChild<QLineEdit *>(ledit_Name);
+                        statusAppendText("- Write done ", Qt::darkGreen);
+                        settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx] = leditPID->text();
+                        leditPID->setStyleSheet(stylesheet_Widget_Not_Changed);
                     }
-                    serialPort.sendCmdNonBlocking(0x0a + idx_Kx, request_Data);
+                    else
+                    {
+                        request_Data.clear();
+                        request_Data.append((char)(1 + idx_Axis));
+                        request_Data.append((char)(1 + idx_PID_Name));
+
+                        scaled_Value = quint32 (leditPID->text().toDouble() * 1000000);
+                        request_Data.append((char)((scaled_Value >> 24) & 0x0ff));
+                        request_Data.append((char)((scaled_Value >> 16) & 0x0ff));
+                        request_Data.append((char)((scaled_Value >> 8) & 0x0ff));
+                        request_Data.append((char)((scaled_Value) & 0x0ff));
+
+                        if (first_Send_Flag == false)
+                        {
+                            first_Send_Flag = true;
+                            statusAppendText("- Send: Write " + name + " Loop");
+                        }
+                        serialPort.sendCmdNonBlocking(0x0a + idx_Kx, request_Data);
+                    }
                 }
             }
         }
@@ -1275,7 +1324,7 @@ void MainWindow::on_btnCameraCapture_clicked()
 
 void MainWindow::sendVelCmd(float az_Vel, float el_Vel)
 {
-    if (ui->btnConnect->text() == "Disconnect")
+    if ((this->settedMode == "TRACKING") && (ui->btnConnect->text() == "Disconnect"))
     {
         QByteArray request_Data;
         QString message_Status;
