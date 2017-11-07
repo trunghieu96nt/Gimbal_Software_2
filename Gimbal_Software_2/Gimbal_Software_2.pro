@@ -40,16 +40,26 @@ HEADERS += \
     pid.h \
     imageprocessor.h
 
-INCLUDEPATH += D:\opencv3_3\opencv\build_qt\install\include
+#INCLUDEPATH += D:\opencv3_3\opencv\build_qt\install\include
 
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_core330.dll
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_highgui330.dll
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgcodecs330.dll
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgproc330.dll
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_features2d330.dll
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_calib3d330.dll
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_tracking330.dll
-LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_videoio330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_core330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_highgui330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgcodecs330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgproc330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_features2d330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_calib3d330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_tracking330.dll
+#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_videoio330.dll
+
+INCLUDEPATH += ~/opencv3_3/opencv/build_ubuntu/include
+
+LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_core.so
+LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_highgui.so
+LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_imgcodecs.so
+LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_imgproc.so
+LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_features2d.so
+LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_tracking.so
+LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_videoio.so
 
 FORMS += \
         mainwindow.ui

@@ -8,9 +8,9 @@ class PID
 public:
     explicit PID();
     void PIDSet(float setpoint, bool use_ramp);
-    float PIDCalc(float feedback, float max_response);
+    float PIDCalc(float feedback, float max_response,float dT);
     void PIDReset();
-    void PIDSetParams(float Kp, float Ki, float Kd);
+    void PIDSetParams(float Kp, float Ki, float Kd, float Kff1, float Kff2);
     void PIDSetFeedforward(float Kff1, float Kff2);
     //PID_set_filter();
     void PIDEnable();

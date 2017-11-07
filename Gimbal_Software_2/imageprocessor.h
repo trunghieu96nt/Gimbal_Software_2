@@ -42,6 +42,9 @@ public:
     Point2d getObjectLocation();
     PID getAzTrackingPID();
     PID getElTrackingPID();
+    void setPIDTrackingParam(int idx_Axis, int idx_Kx, float data);
+    void setPIDTrackingParams(float KpAz, float KiAz, float KdAz, float Kff1Az, float Kff2Az,
+                                              float KpEl, float KiEl, float KdEl, float Kff1El, float Kff2El);
 
 signals:
     void currentFrameUpdated();
@@ -65,13 +68,17 @@ private:
     QTimer *timer;
     Ptr<Tracker> tracker;
     bool isInitiated;
+    bool gotFirstOKFrame;
+    double lastCaptureTime;
+    int cntLossFrame;
     Rect2d bbox;
     Point2d objectLocation;
     float omegaZCmd, omegaYCmd;
-    PID XTrackingPID, YTrackingPID;
+    PID xTrackingPID, yTrackingPID;
 
     void createTracker(void);
     void initPIDTracking(void);
+
 };
 
 #endif // CVIMAGEPROCESSOR_H

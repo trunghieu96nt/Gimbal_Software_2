@@ -65,7 +65,7 @@ void PID::PIDSet(float setpoint, bool useRamp)
     }
 }
 
-float PID::PIDCalc(float feedback, float max_response)
+float PID::PIDCalc(float feedback, float max_response, float dT)
 {
     float derivative;
     this->PIDError = this->setpoint - feedback;
@@ -75,14 +75,14 @@ float PID::PIDCalc(float feedback, float max_response)
     }
 
     this->pPart = this->Kp * this->PIDError;
-    this->iPart += this->Ki * (this->PIDError + this->PIDErrorTemp1)/2;
+    this->iPart += this->Ki * dT * (this->PIDError + this->PIDErrorTemp1)/2;
 
     if (this->iPart > max_response)
         this->iPart = max_response;
     else if (this->iPart < -max_response)
         this->iPart = -max_response;
 
-    derivative = this->PIDError - this->PIDErrorTemp1;
+    derivative = (this->PIDError - this->PIDErrorTemp1)/dT;
     this->derivative = this->derivative + this->alphaDerivative * (derivative - this->derivative);
     this->dPart = this->Kd * (this->derivative);
 
@@ -130,11 +130,13 @@ void PID::PIDReset()
     this->feedPart2 = 0.0f;
 }
 
-void PID::PIDSetParams(float Kp, float Ki, float Kd)
+void PID::PIDSetParams(float Kp, float Ki, float Kd, float Kff1, float Kff2)
 {
     this->Kp=Kp;
     this->Ki=Ki;
     this->Kd=Kd;
+    this->Kff1=Kff1;
+    this->Kff2=Kff2;
 }
 
 void PID::PIDSetFeedforward(float Kff1, float Kff2)

@@ -80,7 +80,9 @@ private slots:
     void sendVelCmd(float az_vel, float el_vel);
 
     /* init image processor object */
-    void initCamera();
+    void initImageProcessor();
+
+    void initFile();
 
 private:
     Ui::MainWindow *ui;
@@ -101,6 +103,8 @@ private:
 
     QTimer timerGetAllParams;
     int cmdCounter;
+
+    QMap<QString, QString> pidTrackingParams;
 
     STRU_CMD_T struGB_CMD[11] =
     {
