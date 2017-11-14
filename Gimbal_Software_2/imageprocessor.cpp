@@ -9,9 +9,9 @@ using namespace std;
 using namespace cv;
 
 const string ImageProcessor::TRACKER_TYPES[6] = {"BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN"};
-const int ImageProcessor::FRAME_WIDTH = 640;
-const int ImageProcessor::FRAME_HEIGHT = 480;
-const int ImageProcessor::INVALID_COORDINATE = 100000;
+const int ImageProcessor::FRAME_WIDTH = 800;//640;
+const int ImageProcessor::FRAME_HEIGHT = 600;//480;
+const int ImageProcessor::INVALID_COORDINATE = 10000;
 const float ImageProcessor::MAX_VEL_CMD_DEG_S = 45;
 
 ImageProcessor::ImageProcessor(cv::Mat *sharedCVImage, QMutex *mutex, QObject *parent) :
@@ -31,9 +31,11 @@ ImageProcessor::ImageProcessor(cv::Mat *sharedCVImage, QMutex *mutex, QObject *p
     //this->capture_device = cvCaptureFromCAM( CV_CAP_ANY );
     //this->capture_device.open();
     this->captureDevice.open( 1 );
+    this->captureDevice.set(CV_CAP_PROP_FRAME_WIDTH,ImageProcessor::FRAME_WIDTH);
+    this->captureDevice.set(CV_CAP_PROP_FRAME_HEIGHT,ImageProcessor::FRAME_HEIGHT);
     //this->capture_device.open( "D:\\ObjectTrackingTest.mp4" );
-    if (cv::ocl::haveOpenCL())
-        cv::ocl::setUseOpenCL(true);
+    //if (cv::ocl::haveOpenCL())
+    //    cv::ocl::setUseOpenCL(true);
 
     /*default to NULL for instance's IplImage and QImage pointers*/
     //this->cur_image = NULL;
@@ -156,7 +158,7 @@ void ImageProcessor::captureFrame()
                 omegaZCmd = xTrackingPID.PIDCalc(objectLocation.x,MAX_VEL_CMD_DEG_S,dT);
                 omegaYCmd = yTrackingPID.PIDCalc(objectLocation.y,MAX_VEL_CMD_DEG_S,dT);
                 //emit velCmdUpdated(5,10);
-                emit velCmdUpdated(omegaZCmd,omegaYCmd);
+                emit velCmdUpdated(omegaZCmd,omegaYCmd,objectLocation.x,objectLocation.y);
             }
         }
         else
@@ -168,7 +170,7 @@ void ImageProcessor::captureFrame()
             {
                 cntLossFrame = 0;// send zero velocity continuously when object detection is failed.
                 gotFirstOKFrame = false;
-                emit velCmdUpdated(0,0);
+                emit velCmdUpdated(0,0,objectLocation.x,objectLocation.y);
             }
             //qDebug()<<"Tracking failure detected";
             putText(currentImage, "Tracking failure detected", Point(100,80), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0,0,255),2);

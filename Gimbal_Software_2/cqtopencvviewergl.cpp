@@ -1,5 +1,5 @@
 #include "cqtopencvviewergl.h"
-#define DEFAULT_FRAMERATE 20.0
+//#define DEFAULT_FRAMERATE 30.0
 CQtOpenCVViewerGl::CQtOpenCVViewerGl(QWidget *parent) :
 QOpenGLWidget(parent)
 {

@@ -48,7 +48,7 @@ public:
 
 signals:
     void currentFrameUpdated();
-    void velCmdUpdated(float az_vel, float el_vel);
+    void velCmdUpdated(float az_vel, float el_vel, float x, float y);
 
 public slots:
     void startCapture();

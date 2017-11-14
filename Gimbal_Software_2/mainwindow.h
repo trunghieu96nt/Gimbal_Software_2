@@ -14,6 +14,7 @@
 #include <QQueue>
 #include <QMutex>
 #include <QMenu>
+#include <QFile>
 
 #include "serialport.h"
 
@@ -77,7 +78,7 @@ private slots:
     void on_btnCameraCapture_clicked();
 
     /* send vel cmd to gimbal */
-    void sendVelCmd(float az_vel, float el_vel);
+    void sendVelCmd(float az_vel, float el_vel, float x, float y);
 
     /* init image processor object */
     void initImageProcessor();
@@ -121,6 +122,9 @@ private:
         { "GET_ACTIVE_AZ",    0x11, QByteArray::fromRawData("\x02", 1) },
     };
 
+    QFile *dataTrackingFile;
+    QTextStream *dataTrackingStream;
+
     void initGUI();
     void initPage();
     void initSerialPort();
@@ -129,8 +133,12 @@ private:
     void initPIDWRButtonMapping();
 
     bool getAllParams();
+
     void statusAppendText(const QString &text);
     void statusAppendText(const QString &text, QColor color);
+
+    void openFile();
+    void closeFile();
 };
 
 #endif // MAINWINDOW_H

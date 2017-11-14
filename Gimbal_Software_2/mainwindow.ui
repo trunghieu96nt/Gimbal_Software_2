@@ -159,7 +159,7 @@ QPushButton:hover:!pressed { background-color: #113A61; }</string>
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_0">
        <layout class="QGridLayout" name="gridLayout_3">
@@ -570,8 +570,8 @@ QGroupBox::title { subcontrol-position: top center; }</string>
                 <rect>
                  <x>10</x>
                  <y>20</y>
-                 <width>640</width>
-                 <height>480</height>
+                 <width>800</width>
+                 <height>600</height>
                 </rect>
                </property>
               </widget>
@@ -628,8 +628,8 @@ QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; back
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1918</width>
-             <height>996</height>
+             <width>1224</width>
+             <height>766</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_25" rowstretch="0,0,0" columnstretch="0,0,0">

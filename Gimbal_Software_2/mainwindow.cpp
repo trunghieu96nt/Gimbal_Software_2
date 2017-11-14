@@ -294,31 +294,45 @@ void MainWindow::initPIDWRButtonMapping()
 
 void MainWindow::initImageProcessor()
 {
-    QObject::connect(ui->cameraViewer->getImageProcessingThread()->getImageProcessor(), SIGNAL(velCmdUpdated(float,float)), this, SLOT(sendVelCmd(float,float)));
+    QObject::connect(ui->cameraViewer->getImageProcessingThread()->getImageProcessor(), SIGNAL(velCmdUpdated(float,float,float,float)), this, SLOT(sendVelCmd(float,float,float,float)));
     QObject::connect(ui->btnCameraCapture, SIGNAL(clicked(bool)), ui->cameraViewer->getImageProcessingThread()->getImageProcessor(),
                      SLOT(startCapture(bool)));
 }
 
 void MainWindow::initFile()
 {
-    //    QFile file("pidTrackingParams.txt");
-    //    bool isFileExisted = file.exists();
-    //    if (!file.open(QIODevice::ReadWrite))
-    //    {
-    //        QMessageBox::information(this, tr("Unable to open PID tracking params file"),
-    //                                 file.errorString());
-    //        return;
-    //    }
-    //    if (isFileExisted)
-    //    {
-    //        QDataStream dataStream(&file);
-    //        dataStream.setVersion(QDataStream::Qt_5_9);
-    //        this->pidTrackingParams.clear();
-    //        this->pidTrackingParams << dataStream;
-    //        //parse data -> send to imageProcessor
-    //        QDebug << this->pidTrackingParams;
-    //    }
-    //    file.close();
+//        QFile file("pidTrackingParams.txt");
+//        bool isFileExisted = file.exists();
+//        if (!file.open(QIODevice::ReadWrite))
+//        {
+//            QMessageBox::information(this, tr("Unable to open PID tracking params file"),
+//                                     file.errorString());
+//            return;
+//        }
+//        if (isFileExisted)
+//        {
+//            QTextStream dataStream(&file);
+//            dataStream.setVersion(QTextStream::Qt_5_9);
+//            this->pidTrackingParams.clear();
+//            this->pidTrackingParams << dataStream;
+//            //parse data -> send to imageProcessor
+//            QDebug << this->pidTrackingParams;
+//        }
+//        file.close();
+
+    dataTrackingFile = new QFile("pidTrackingData.txt");
+    bool isFileExisted = dataTrackingFile->exists();
+    if (!dataTrackingFile->open(QIODevice::ReadWrite))
+    {
+        //QMessageBox::information(this, tr("Unable to open PID tracking data file"),
+        //                         dataTrackingFile->errorString());
+        return;
+    }
+    if (isFileExisted)
+    {
+//        dataTrackingStream = new QTextStream(dataTrackingFile);
+//        dataTrackingStream->setVersion(QTextStream::Qt_5_9);
+    }
 }
 
 /* Page Buttons */
@@ -356,6 +370,7 @@ void MainWindow::on_btnConnect_clicked()
                     statusAppendText("- " + serialPort.portName() + " is connected");
             timerSerialPort->stop();
             getAllParams();
+            openFile();
         }
     }
     else
@@ -370,6 +385,7 @@ void MainWindow::on_btnConnect_clicked()
                 serialPort.disconnectPort();
         statusAppendText("- " + serialPort.portName() + " is disconnected");
         timerSerialPort->start(1000);
+        closeFile();
     }
 }
 
@@ -1322,7 +1338,7 @@ void MainWindow::on_btnCameraCapture_clicked()
     }
 }
 
-void MainWindow::sendVelCmd(float az_Vel, float el_Vel)
+void MainWindow::sendVelCmd(float az_Vel, float el_Vel, float x, float y)
 {
     if ((this->settedMode == "TRACKING") && (ui->btnConnect->text() == "Disconnect"))
     {
@@ -1349,5 +1365,32 @@ void MainWindow::sendVelCmd(float az_Vel, float el_Vel)
 
         statusAppendText(message_Status);
         serialPort.sendCmdNonBlocking(0x07, request_Data);
+
+//        az_Data = qint16 (x);
+//        request_Data.append((char)((az_Data >> 8) & 0x0ff));
+//        request_Data.append((char)((az_Data) & 0x0ff));
+
+//        el_Data = qint16 (y);
+//        request_Data.append((char)((el_Data >> 8) & 0x0ff));
+//        request_Data.append((char)((el_Data) & 0x0ff));
+
+//        statusAppendText(message_Status);
+//        serialPort.sendCmdNonBlocking(0x12, request_Data);
+
+        (*dataTrackingStream) << QString::number(az_Data) << " " << QString::number(el_Data) << " "
+                              << QString::number(x) << " " << QString::number(y) << endl;
     }
+}
+
+void MainWindow::openFile()
+{
+    dataTrackingFile = new QFile("pidTrackingData.txt");
+    dataTrackingFile->open(QIODevice::ReadWrite);
+    dataTrackingStream = new QTextStream(dataTrackingFile);
+    //dataTrackingStream->setVersion(QDataStream::Qt_5_9);
+}
+
+void MainWindow::closeFile()
+{
+    dataTrackingFile->close();
 }
