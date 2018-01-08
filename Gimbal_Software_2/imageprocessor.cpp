@@ -31,8 +31,11 @@ ImageProcessor::ImageProcessor(cv::Mat *sharedCVImage, QMutex *mutex, QObject *p
     //this->capture_device = cvCaptureFromCAM( CV_CAP_ANY );
     //this->capture_device.open();
     this->captureDevice.open( 1 );
+    if (!this->captureDevice.isOpened())
+        this->captureDevice.open( 2 );
     this->captureDevice.set(CV_CAP_PROP_FRAME_WIDTH,ImageProcessor::FRAME_WIDTH);
     this->captureDevice.set(CV_CAP_PROP_FRAME_HEIGHT,ImageProcessor::FRAME_HEIGHT);
+    this->captureDevice.set(CV_CAP_PROP_FPS,30);
     //this->capture_device.open( "D:\\ObjectTrackingTest.mp4" );
     //if (cv::ocl::haveOpenCL())
     //    cv::ocl::setUseOpenCL(true);

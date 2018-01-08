@@ -1340,7 +1340,7 @@ void MainWindow::on_btnCameraCapture_clicked()
 
 void MainWindow::sendVelCmd(float az_Vel, float el_Vel, float x, float y)
 {
-    if ((this->settedMode == "TRACKING") && (ui->btnConnect->text() == "Disconnect"))
+    if (((this->settedMode == "TRACKING") || (this->settedMode == "POINTING")) && (ui->btnConnect->text() == "Disconnect"))
     {
         QByteArray request_Data;
         QString message_Status;
@@ -1351,31 +1351,31 @@ void MainWindow::sendVelCmd(float az_Vel, float el_Vel, float x, float y)
 
         message_Status = "- Send vel cmd";
 
-        az_Data = quint32 (az_Vel * 100);
-        request_Data.append((char)((az_Data >> 24) & 0x0ff));
-        request_Data.append((char)((az_Data >> 16) & 0x0ff));
-        request_Data.append((char)((az_Data >> 8) & 0x0ff));
-        request_Data.append((char)((az_Data) & 0x0ff));
-
-        el_Data = quint32 (el_Vel * 100);
-        request_Data.append((char)((el_Data >> 24) & 0x0ff));
-        request_Data.append((char)((el_Data >> 16) & 0x0ff));
-        request_Data.append((char)((el_Data >> 8) & 0x0ff));
-        request_Data.append((char)((el_Data) & 0x0ff));
-
-        statusAppendText(message_Status);
-        serialPort.sendCmdNonBlocking(0x07, request_Data);
-
-//        az_Data = qint16 (x);
+//        az_Data = quint32 (az_Vel * 100);
+//        request_Data.append((char)((az_Data >> 24) & 0x0ff));
+//        request_Data.append((char)((az_Data >> 16) & 0x0ff));
 //        request_Data.append((char)((az_Data >> 8) & 0x0ff));
 //        request_Data.append((char)((az_Data) & 0x0ff));
 
-//        el_Data = qint16 (y);
+//        el_Data = quint32 (el_Vel * 100);
+//        request_Data.append((char)((el_Data >> 24) & 0x0ff));
+//        request_Data.append((char)((el_Data >> 16) & 0x0ff));
 //        request_Data.append((char)((el_Data >> 8) & 0x0ff));
 //        request_Data.append((char)((el_Data) & 0x0ff));
 
 //        statusAppendText(message_Status);
-//        serialPort.sendCmdNonBlocking(0x12, request_Data);
+//        serialPort.sendCmdNonBlocking(0x07, request_Data);
+
+        az_Data = qint16 (x);
+        request_Data.append((char)((az_Data >> 8) & 0x0ff));
+        request_Data.append((char)((az_Data) & 0x0ff));
+
+        el_Data = qint16 (y);
+        request_Data.append((char)((el_Data >> 8) & 0x0ff));
+        request_Data.append((char)((el_Data) & 0x0ff));
+
+        statusAppendText(message_Status);
+        serialPort.sendCmdNonBlocking(0x12, request_Data);
 
         (*dataTrackingStream) << QString::number(az_Data) << " " << QString::number(el_Data) << " "
                               << QString::number(x) << " " << QString::number(y) << endl;
