@@ -12,7 +12,7 @@ const string ImageProcessor::TRACKER_TYPES[6] = {"BOOSTING", "MIL", "KCF", "TLD"
 const int ImageProcessor::FRAME_WIDTH = 800;//640;
 const int ImageProcessor::FRAME_HEIGHT = 600;//480;
 const int ImageProcessor::INVALID_COORDINATE = 10000;
-const float ImageProcessor::MAX_VEL_CMD_DEG_S = 45;
+const float ImageProcessor::MAX_VEL_CMD_DEG_S = 450;//45;
 
 ImageProcessor::ImageProcessor(cv::Mat *sharedCVImage, QMutex *mutex, QObject *parent) :
     QObject(parent)
@@ -30,7 +30,7 @@ ImageProcessor::ImageProcessor(cv::Mat *sharedCVImage, QMutex *mutex, QObject *p
     //TODO: check if device is connected
     //this->capture_device = cvCaptureFromCAM( CV_CAP_ANY );
     //this->capture_device.open();
-    this->captureDevice.open( 1 );
+    this->captureDevice.open(1 );
     if (!this->captureDevice.isOpened())
         this->captureDevice.open( 2 );
     this->captureDevice.set(CV_CAP_PROP_FRAME_WIDTH,ImageProcessor::FRAME_WIDTH);
