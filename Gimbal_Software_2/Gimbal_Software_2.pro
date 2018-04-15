@@ -40,26 +40,39 @@ HEADERS += \
     pid.h \
     imageprocessor.h
 
-#INCLUDEPATH += D:\opencv3_3\opencv\build_qt\install\include
+win32 {
+    INCLUDEPATH += C:\opencv331\opencv-build\install\include
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_core331.dll
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_highgui331.dll
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_imgcodecs331.dll
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_imgproc331.dll
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_features2d331.dll
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_calib3d331.dll
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_tracking331.dll
+    LIBS += C:\opencv331\opencv-build\bin\libopencv_videoio331.dll
 
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_core330.dll
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_highgui330.dll
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgcodecs330.dll
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgproc330.dll
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_features2d330.dll
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_calib3d330.dll
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_tracking330.dll
-#LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_videoio330.dll
+    #INCLUDEPATH += D:\opencv3_3\opencv\build_qt\install\include
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_core330.dll
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_highgui330.dll
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgcodecs330.dll
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_imgproc330.dll
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_features2d330.dll
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_calib3d330.dll
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_tracking330.dll
+    #LIBS += D:\opencv3_3\opencv\build_qt\bin\libopencv_videoio330.dll
+}
 
-INCLUDEPATH += ~/opencv3_3/opencv/build_ubuntu/include
+linux-g++ | linux-g++-64 | linux-g++-32 {
+    INCLUDEPATH += ~/opencv3_3/opencv/build_ubuntu/include
 
-LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_core.so
-LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_highgui.so
-LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_imgcodecs.so
-LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_imgproc.so
-LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_features2d.so
-LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_tracking.so
-LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_videoio.so
+    LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_core.so
+    LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_highgui.so
+    LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_imgcodecs.so
+    LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_imgproc.so
+    LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_features2d.so
+    LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_tracking.so
+    LIBS += ~/opencv3_3/opencv/build_ubuntu/lib/libopencv_videoio.so
+}
 
 FORMS += \
         mainwindow.ui
