@@ -159,9 +159,12 @@ QPushButton:hover:!pressed { background-color: #113A61; }</string>
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_0">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <layout class="QGridLayout" name="gridLayout_3">
         <property name="leftMargin">
          <number>0</number>
@@ -201,7 +204,7 @@ QPushButton:hover:!pressed { background-color: #113A61; }</string>
              <height>996</height>
             </rect>
            </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+           <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,2,2,0,0">
               <property name="spacing">
@@ -551,97 +554,427 @@ QPushButton:hover:!pressed { background-color: #27598b; }</string>
              </layout>
             </item>
             <item>
-             <widget class="QGroupBox" name="grpCamera">
-              <property name="minimumSize">
-               <size>
-                <width>800</width>
-                <height>600</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QGroupBox { font: 16px; }
+             <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,0">
+              <item>
+               <widget class="QGroupBox" name="grpCamera">
+                <property name="minimumSize">
+                 <size>
+                  <width>800</width>
+                  <height>600</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QGroupBox { font: 16px; }
 QGroupBox::title { subcontrol-position: top center; }</string>
-              </property>
-              <property name="title">
-               <string>Camera</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_6">
-               <item row="0" column="1">
-                <spacer name="verticalSpacer_6">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="1" column="1">
-                <widget class="CQtOpenCVViewerGl" name="cameraViewer">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>800</width>
-                   <height>600</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>800</width>
-                   <height>600</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <spacer name="horizontalSpacer_4">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="1" column="2">
-                <spacer name="horizontalSpacer_6">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="2" column="1">
-                <spacer name="verticalSpacer_7">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </widget>
+                </property>
+                <property name="title">
+                 <string>Camera</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_6">
+                 <item row="0" column="1">
+                  <spacer name="verticalSpacer_6">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="CQtOpenCVViewerGl" name="cameraViewer">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>800</width>
+                     <height>600</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>800</width>
+                     <height>600</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <spacer name="horizontalSpacer_4">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="1" column="2">
+                  <spacer name="horizontalSpacer_6">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="2" column="1">
+                  <spacer name="verticalSpacer_7">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <widget class="QGroupBox" name="grpAzimuth">
+                  <property name="styleSheet">
+                   <string notr="true">QGroupBox { font: 16px; }
+QGroupBox::title { subcontrol-position: top center; }
+QLabel { font: bold 18px; }
+QLineEdit {
+	font: bold 18px; border: 2px solid #8f8f8f; border-radius: 5px;
+	min-height: 32px; min-width: 112px; padding-left: 4px;
+}
+QLineEdit:focus { border: 2px solid #cc6600; }
+QLineEdit:hover { border: 2px solid #cc6600; }
+QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; min-width: 100px;}
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed { background-color: #27598b; }
+
+#grpAzimuth { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_8" rowstretch="0,1,1" columnstretch="0,2,1,1">
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="lblPos">
+                     <property name="text">
+                      <string>Pos (deg):</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="leditAZPos"/>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="leditAZVel"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="lblVel">
+                     <property name="text">
+                      <string>Vel (deg/s):</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QPushButton" name="btnAZSetPos">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="text">
+                      <string>Set Pos</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QPushButton" name="btnAZSetVel">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Set Vel</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="3">
+                    <widget class="QPushButton" name="btnAZGetPos">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton { background-color: #774122; }
+QPushButton:pressed { background-color: #63361c; }
+QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Get Pos</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="3">
+                    <widget class="QPushButton" name="btnAZSetBoth">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Set Both</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="4">
+                    <widget class="QLabel" name="lblPos_2">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Azimuth</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="grpElevator">
+                  <property name="styleSheet">
+                   <string notr="true">QGroupBox { font: 16px; }
+QGroupBox::title { subcontrol-position: top center; }
+QLabel { font: bold 18px; }
+QLineEdit {
+	font: bold 18px; border: 2px solid #8f8f8f; border-radius: 5px;
+	min-height: 32px; min-width: 112px; padding-left: 4px;
+}
+QLineEdit:focus { border: 2px solid #cc6600; }
+QLineEdit:hover { border: 2px solid #cc6600; }
+QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; min-width: 100px;}
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed { background-color: #27598b; }
+
+#grpElevator { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_9" rowstretch="0,1,1" columnstretch="0,2,1,1">
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="leditELVel"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="lblVel_2">
+                     <property name="text">
+                      <string>Vel (deg/s):</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QPushButton" name="btnELSetPos">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="text">
+                      <string>Set Pos</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QPushButton" name="btnELSetVel">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Set Vel</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="lblPos_4">
+                     <property name="text">
+                      <string>Pos (deg):</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="leditELPos"/>
+                   </item>
+                   <item row="1" column="3">
+                    <widget class="QPushButton" name="btnELGetPos">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton { background-color: #774122; }
+QPushButton:pressed { background-color: #63361c; }
+QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Get Pos</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="3">
+                    <widget class="QPushButton" name="btnELSetBoth">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Set Both</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="4">
+                    <widget class="QLabel" name="lblPos_3">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Elevator</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="grpActiveAxis_0">
+                  <property name="styleSheet">
+                   <string notr="true">QGroupBox { font: 16px; }
+QGroupBox::title { subcontrol-position: top center; }
+QLabel { font: bold 18px; }
+
+#grpActiveAxis_0 { 
+	border: 2px solid gray; border-radius: 10px;	font: 16px; 
+	min-width: 180px; max-width: 180px;
+}
+QPushButton { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: 36px; color: black; }
+QPushButton:pressed { background-color: #f2f2f2; }
+QPushButton:hover:!checked { border: 2px solid #cc6600; }
+QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; }</string>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_22" rowstretch="0,1,1">
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="lblPos_7">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Active Axis</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QPushButton" name="btnAZActive_0">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="text">
+                      <string>Azimuth</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="autoExclusive">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QPushButton" name="btnELActive_0">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="text">
+                      <string>Elevator</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="autoExclusive">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -694,9 +1027,12 @@ QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; back
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1224</width>
-             <height>766</height>
+             <width>1918</width>
+             <height>996</height>
             </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"/>
            </property>
            <layout class="QGridLayout" name="gridLayout_25" rowstretch="0,0,0" columnstretch="0,0,0">
             <item row="0" column="1">
@@ -1690,227 +2026,21 @@ QPlainTextEdit { font: 14px; border: 2px solid #8c8c8c; border-radius: 5px; back
                </spacer>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,1,0,0">
+               <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0,0,1,1,0">
                 <item>
-                 <widget class="QGroupBox" name="grpAzimuth">
+                 <widget class="QPlainTextEdit" name="ptxtStatus_1">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="styleSheet">
-                   <string notr="true">#grpAzimuth { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
+                   <string notr="true"/>
                   </property>
-                  <property name="title">
-                   <string/>
+                  <property name="readOnly">
+                   <bool>true</bool>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_8" rowstretch="0,1,1" columnstretch="0,2,1,1">
-                   <property name="topMargin">
-                    <number>2</number>
-                   </property>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="lblPos">
-                     <property name="text">
-                      <string>Pos (deg):</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLineEdit" name="leditAZPos"/>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="leditAZVel"/>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="lblVel">
-                     <property name="text">
-                      <string>Vel (deg/s):</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QPushButton" name="btnAZSetPos">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true"/>
-                     </property>
-                     <property name="text">
-                      <string>Set Pos</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="2">
-                    <widget class="QPushButton" name="btnAZSetVel">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>Set Vel</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="3">
-                    <widget class="QPushButton" name="btnAZGetPos">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QPushButton { background-color: #774122; }
-QPushButton:pressed { background-color: #63361c; }
-QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
-                     </property>
-                     <property name="text">
-                      <string>Get Pos</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="3">
-                    <widget class="QPushButton" name="btnAZSetBoth">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>Set Both</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0" colspan="4">
-                    <widget class="QLabel" name="lblPos_2">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
-                     </property>
-                     <property name="text">
-                      <string>Azimuth</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QGroupBox" name="grpElevator">
-                  <property name="styleSheet">
-                   <string notr="true">#grpElevator { border: 2px solid gray; border-radius: 10px;	font: 16px; }</string>
-                  </property>
-                  <property name="title">
-                   <string/>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_9" rowstretch="0,1,1" columnstretch="0,2,1,1">
-                   <property name="topMargin">
-                    <number>2</number>
-                   </property>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="leditELVel"/>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="lblVel_2">
-                     <property name="text">
-                      <string>Vel (deg/s):</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QPushButton" name="btnELSetPos">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true"/>
-                     </property>
-                     <property name="text">
-                      <string>Set Pos</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="2">
-                    <widget class="QPushButton" name="btnELSetVel">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>Set Vel</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="lblPos_4">
-                     <property name="text">
-                      <string>Pos (deg):</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLineEdit" name="leditELPos"/>
-                   </item>
-                   <item row="1" column="3">
-                    <widget class="QPushButton" name="btnELGetPos">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QPushButton { background-color: #774122; }
-QPushButton:pressed { background-color: #63361c; }
-QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
-                     </property>
-                     <property name="text">
-                      <string>Get Pos</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="3">
-                    <widget class="QPushButton" name="btnELSetBoth">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>Set Both</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0" colspan="4">
-                    <widget class="QLabel" name="lblPos_3">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
-                     </property>
-                     <property name="text">
-                      <string>Elevator</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
                  </widget>
                 </item>
                 <item>
@@ -1984,18 +2114,284 @@ QPushButton:checked { color: white; border: 2px solid #224d77; background-color:
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPlainTextEdit" name="ptxtStatus_1">
+                 <widget class="QGroupBox" name="grpCtlMethod">
+                  <property name="minimumSize">
+                   <size>
+                    <width>300</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>300</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">#grpCtlMethod { 
+	border: 2px solid gray; border-radius: 10px;	font: 16px; 
+}</string>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_23" rowstretch="0,0,0">
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
+                   <item row="2" column="0">
+                    <layout class="QHBoxLayout" name="horizontalLayout_4">
+                     <item>
+                      <widget class="QPushButton" name="btnSetCtlMethod">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true"/>
+                       </property>
+                       <property name="text">
+                        <string>Set</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="btnGetCtlMethod">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton { background-color: #774122; }
+QPushButton:pressed { background-color: #63361c; }
+QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
+                       </property>
+                       <property name="text">
+                        <string>Get</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="lblPos_8">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Control Method</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QComboBox" name="cboCtlMethod">
+                     <property name="styleSheet">
+                      <string notr="true">QComboBox { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; min-height: 36px; }
+QComboBox::drop-down {
+	subcontrol-origin: padding; subcontrol-position: top right; width: 15px;
+	border-left-width: 1px; border-left-color: darkgray;
+	border-left-style: solid; border-top-right-radius: 3px; border-bottom-right-radius: 3px;
+}
+QComboBox::down-arrow{ image: url(:/files/images/arrow_down.png); height: 12px; width: 12px; }
+QComboBox::on { border: 2px solid #cc6600; }
+QComboBox:hover { border: 2px solid #cc6600; }
+QComboBox QAbstractItemView {
+	border: 2px solid #cc6600;
+	selection-background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #111, stop: 1 #333);
+}</string>
+                     </property>
+                     <item>
+                      <property name="text">
+                       <string>Traditional PID</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>BP Neural Network PID</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="grpStartupMode">
+                  <property name="minimumSize">
+                   <size>
+                    <width>300</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>300</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">#grpStartupMode { 
+	border: 2px solid gray; border-radius: 10px;	font: 16px; 
+}</string>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_24" rowstretch="0,1,1">
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
+                   <item row="2" column="0">
+                    <layout class="QHBoxLayout" name="horizontalLayout_5">
+                     <item>
+                      <widget class="QPushButton" name="btnSetStartupMode">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true"/>
+                       </property>
+                       <property name="text">
+                        <string>Set</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="btnGetStartupMode">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton { background-color: #774122; }
+QPushButton:pressed { background-color: #63361c; }
+QPushButton:hover:!pressed { background-color: #8b4c27; }</string>
+                       </property>
+                       <property name="text">
+                        <string>Get</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="lblPos_9">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLabel { qproperty-alignment: AlignCenter; }</string>
+                     </property>
+                     <property name="text">
+                      <string>Start-up Mode</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QComboBox" name="cboStartupMode1">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QComboBox { font: bold 18px; border: 2px solid #8c8c8c; border-radius: 5px; min-height: 36px; }
+QComboBox::drop-down {
+	subcontrol-origin: padding; subcontrol-position: top right; width: 15px;
+	border-left-width: 1px; border-left-color: darkgray;
+	border-left-style: solid; border-top-right-radius: 3px; border-bottom-right-radius: 3px;
+}
+QComboBox::down-arrow{ image: url(:/files/images/arrow_down.png); height: 12px; width: 12px; }
+QComboBox::on { border: 2px solid #cc6600; }
+QComboBox:hover { border: 2px solid #cc6600; }
+QComboBox QAbstractItemView {
+	border: 2px solid #cc6600;
+	selection-background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #111, stop: 1 #333);
+}</string>
+                     </property>
+                     <item>
+                      <property name="text">
+                       <string>Home</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Stop</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Manual</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Pointing</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Tracking</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnSetCtlMethod_3">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
-                  <property name="styleSheet">
-                   <string notr="true"/>
+                  <property name="minimumSize">
+                   <size>
+                    <width>150</width>
+                    <height>40</height>
+                   </size>
                   </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton { font: bold 18px; color: white; background-color: #224d77; border-radius: 5px; min-height: 40px; min-width: 150px;}
+QPushButton:pressed { background-color: #1c4063; }
+QPushButton:hover:!pressed { background-color: #27598b; }</string>
+                  </property>
+                  <property name="text">
+                   <string>Save
+Parameters</string>
                   </property>
                  </widget>
                 </item>
