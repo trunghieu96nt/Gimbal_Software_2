@@ -108,7 +108,7 @@ void MainWindow::initGUI()
                                         ui->grpModeControl->setStyleSheet(stylesheet_Widget);
             ui->grpImageProcessing->setStyleSheet(stylesheet_Widget);
     stylesheet_Widget = QString("\
-                                QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
+                                QPushButton { font: bold %1px; color: white; background-color: #224d77; border: none; border-radius: 5px; min-height: %2px;} \
                                 QPushButton:pressed { background-color: #1c4063; } \
                                 QPushButton:hover:!pressed { background-color: #27598b; } \
                                 ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
@@ -123,9 +123,9 @@ void MainWindow::initGUI()
             stylesheet_Widget = QString("\
                                         QPlainTextEdit { \
                                             font: %1px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; \
-                                            min-height: %2px; max-height: %2px; min-width: %3px; max-width: %3px; \
+                                            min-width: %2px; max-width: %2px; \
                                         } \
-                                        ").arg(int(14 * heightFactor)).arg(int(76 * heightFactor)).arg(int(298 * widthFactor));
+                                        ").arg(int(14 * heightFactor)).arg(int(300 * heightFactor));
                                         ui->ptxtStatus_0->setStyleSheet(stylesheet_Widget);
 
             stylesheet_Widget = QString("\
@@ -150,7 +150,7 @@ void MainWindow::initGUI()
                             #grpActiveAxis { \
                                 border: 2px solid gray; border-radius: 10px; font: %1px; \
                                 min-width: %2px; max-width: %2px; \
-} \
+                                } \
                                 QPushButton { font: bold %3px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: %4px; color: black; } \
                                 QPushButton:pressed { background-color: #f2f2f2; } \
                                 QPushButton:hover:!checked { border: 2px solid #cc6600; } \
@@ -301,24 +301,24 @@ void MainWindow::initImageProcessor()
 
 void MainWindow::initFile()
 {
-//        QFile file("pidTrackingParams.txt");
-//        bool isFileExisted = file.exists();
-//        if (!file.open(QIODevice::ReadWrite))
-//        {
-//            QMessageBox::information(this, tr("Unable to open PID tracking params file"),
-//                                     file.errorString());
-//            return;
-//        }
-//        if (isFileExisted)
-//        {
-//            QTextStream dataStream(&file);
-//            dataStream.setVersion(QTextStream::Qt_5_9);
-//            this->pidTrackingParams.clear();
-//            this->pidTrackingParams << dataStream;
-//            //parse data -> send to imageProcessor
-//            QDebug << this->pidTrackingParams;
-//        }
-//        file.close();
+    //        QFile file("pidTrackingParams.txt");
+    //        bool isFileExisted = file.exists();
+    //        if (!file.open(QIODevice::ReadWrite))
+    //        {
+    //            QMessageBox::information(this, tr("Unable to open PID tracking params file"),
+    //                                     file.errorString());
+    //            return;
+    //        }
+    //        if (isFileExisted)
+    //        {
+    //            QTextStream dataStream(&file);
+    //            dataStream.setVersion(QTextStream::Qt_5_9);
+    //            this->pidTrackingParams.clear();
+    //            this->pidTrackingParams << dataStream;
+    //            //parse data -> send to imageProcessor
+    //            QDebug << this->pidTrackingParams;
+    //        }
+    //        file.close();
 
     dataTrackingFile = new QFile("pidTrackingData.txt");
     bool isFileExisted = dataTrackingFile->exists();
@@ -330,8 +330,8 @@ void MainWindow::initFile()
     }
     if (isFileExisted)
     {
-//        dataTrackingStream = new QTextStream(dataTrackingFile);
-//        dataTrackingStream->setVersion(QTextStream::Qt_5_9);
+        //        dataTrackingStream = new QTextStream(dataTrackingFile);
+        //        dataTrackingStream->setVersion(QTextStream::Qt_5_9);
     }
 }
 
@@ -990,9 +990,9 @@ void MainWindow::btnWritePID_clicked(const QString &name)
                                                                                QLineEdit:focus { border: 2px solid #cc6600; } \
                                                                                QLineEdit:hover { border: 2px solid #cc6600; } \
                                                                                ").arg(int(18 * heightFactor)).arg(int(32 * heightFactor)).arg(int(112 * widthFactor));
-                        ui->cameraViewer->getImageProcessingThread()->getImageProcessor()->setPIDTrackingParam(idx_Axis,idx_Kx,leditPID->text().toDouble());
-                        //leditPID = ui->centralWidget->findChild<QLineEdit *>(ledit_Name);
-                        statusAppendText("- Write done ", Qt::darkGreen);
+                                                                               ui->cameraViewer->getImageProcessingThread()->getImageProcessor()->setPIDTrackingParam(idx_Axis,idx_Kx,leditPID->text().toDouble());
+                                //leditPID = ui->centralWidget->findChild<QLineEdit *>(ledit_Name);
+                                statusAppendText("- Write done ", Qt::darkGreen);
                         settedPIDValue[idx_Axis][idx_PID_Name][idx_Kx] = leditPID->text();
                         leditPID->setStyleSheet(stylesheet_Widget_Not_Changed);
                     }
@@ -1319,7 +1319,7 @@ void MainWindow::on_btnCameraCapture_clicked()
         //ui->cameraViewer->start_capture();
         ui->btnCameraCapture->setText("Stop Capture");
         stylesheet_Widget = QString("\
-                                    QPushButton { font: bold %1px; color: white; background-color: #774122; border-radius: 5px; min-height: %2px;} \
+                                    QPushButton { font: bold %1px; color: white; background-color: #774122; border: none; border-radius: 5px; min-height: %2px;} \
                                     QPushButton:pressed { background-color: #63361c; } \
                                     QPushButton:hover:!pressed { background-color: #8b4c27; } \
                                     ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
@@ -1330,7 +1330,7 @@ void MainWindow::on_btnCameraCapture_clicked()
         //ui->cameraViewer->stop_capture();
         ui->btnCameraCapture->setText("Start Capture");
         stylesheet_Widget = QString("\
-                                    QPushButton { font: bold %1px; color: white; background-color: #224d77; border-radius: 5px; min-height: %2px;} \
+                                    QPushButton { font: bold %1px; color: white; background-color: #224d77; border: none; border-radius: 5px; min-height: %2px;} \
                                     QPushButton:pressed { background-color: #1c4063; } \
                                     QPushButton:hover:!pressed { background-color: #27598b; } \
                                     ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
@@ -1366,16 +1366,16 @@ void MainWindow::sendVelCmd(float az_Vel, float el_Vel, float x, float y)
         statusAppendText(message_Status);
         serialPort.sendCmdNonBlocking(0x07, request_Data);
 
-//        az_Data = qint16 (x);
-//        request_Data.append((char)((az_Data >> 8) & 0x0ff));
-//        request_Data.append((char)((az_Data) & 0x0ff));
+        //        az_Data = qint16 (x);
+        //        request_Data.append((char)((az_Data >> 8) & 0x0ff));
+        //        request_Data.append((char)((az_Data) & 0x0ff));
 
-//        el_Data = qint16 (y);
-//        request_Data.append((char)((el_Data >> 8) & 0x0ff));
-//        request_Data.append((char)((el_Data) & 0x0ff));
+        //        el_Data = qint16 (y);
+        //        request_Data.append((char)((el_Data >> 8) & 0x0ff));
+        //        request_Data.append((char)((el_Data) & 0x0ff));
 
-//        statusAppendText(message_Status);
-//        serialPort.sendCmdNonBlocking(0x12, request_Data);
+        //        statusAppendText(message_Status);
+        //        serialPort.sendCmdNonBlocking(0x12, request_Data);
 
         (*dataTrackingStream) << QString::number(az_Data) << " " << QString::number(el_Data) << " "
                               << QString::number(x) << " " << QString::number(y) << endl;
