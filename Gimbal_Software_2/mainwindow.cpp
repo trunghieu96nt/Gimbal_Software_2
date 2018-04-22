@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initModeButtonMapping();
     initPIDLineEditMapping();
     initPIDWRButtonMapping();
+    initActiveAxisButtonMapping();
     initFile();
     /* TODO: check if ImageProcessor is initiated */
     //    if (ui->cameraViewer->getImageProcessingThread()->getImageProcessor() != NULL)
@@ -111,7 +112,7 @@ void MainWindow::initGUI()
                                 QPushButton { font: bold %1px; color: white; background-color: #224d77; border: none; border-radius: 5px; min-height: %2px;} \
                                 QPushButton:pressed { background-color: #1c4063; } \
                                 QPushButton:hover:!pressed { background-color: #27598b; } \
-                                ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                ").arg(int(18 * heightFactor)).arg(int(90 * heightFactor));
                                 ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
 
             stylesheet_Widget = QString("\
@@ -147,22 +148,27 @@ void MainWindow::initGUI()
             ui->page_1->setStyleSheet(stylesheet_Widget);
 
     stylesheet_Widget = QString("\
-                            #grpActiveAxis { \
+                            QGroupBox { font: %1px; } \
+                            QGroupBox::title { subcontrol-position: top center; } \
+                            QLabel { font: bold %3px; } \
+\
+                            #grpActiveAxis_0, #grpActiveAxis_1 { \
                                 border: 2px solid gray; border-radius: 10px; font: %1px; \
                                 min-width: %2px; max-width: %2px; \
-                                } \
+} \
                                 QPushButton { font: bold %3px; border: 2px solid #8c8c8c; border-radius: 5px; background-color: white; min-height: %4px; color: black; } \
                                 QPushButton:pressed { background-color: #f2f2f2; } \
                                 QPushButton:hover:!checked { border: 2px solid #cc6600; } \
                                 QPushButton:checked { color: white; border: 2px solid #224d77; background-color: #224d77; } \
                                 ").arg(int(16 * heightFactor)).arg(int(180 * widthFactor)).arg(int(18 * heightFactor)).arg(int(36 * heightFactor));
-                                ui->grpActiveAxis->setStyleSheet(stylesheet_Widget);
+                                ui->grpActiveAxis_0->setStyleSheet(stylesheet_Widget);
+            ui->grpActiveAxis_1->setStyleSheet(stylesheet_Widget);
 
-            /* QPlainTextEdit Menu */
-            ui->ptxtStatus_0->setContextMenuPolicy(Qt::CustomContextMenu);
+    /* QPlainTextEdit Menu */
+    ui->ptxtStatus_0->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->ptxtStatus_1->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->ptxtStatus_0,SIGNAL(customContextMenuRequested(QPoint)), this,SLOT(show_ptxtStatus_Menu(QPoint)));
-    connect(ui->ptxtStatus_1,SIGNAL(customContextMenuRequested(QPoint)), this,SLOT(show_ptxtStatus_Menu(QPoint)));
+    connect(ui->ptxtStatus_0,SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(show_ptxtStatus_Menu(QPoint)));
+    connect(ui->ptxtStatus_1,SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(show_ptxtStatus_Menu(QPoint)));
 }
 
 void MainWindow::initPage()
@@ -290,6 +296,30 @@ void MainWindow::initPIDWRButtonMapping()
     connect(ui->btnWriteCurrentLoop, SIGNAL(clicked()), pid_WR_Mapper, SLOT(map()));
 
     connect(pid_WR_Mapper, SIGNAL(mapped(const QString &)), SLOT(btnWritePID_clicked(const QString &)));
+}
+
+void MainWindow::initActiveAxisButtonMapping()
+{
+    QSignalMapper *activeAZMapper = new QSignalMapper(this);
+    QSignalMapper *activeELMapper = new QSignalMapper(this);
+
+    /* AZ axis */
+    activeAZMapper->setMapping(ui->btnAZActive_0, 0);
+    activeAZMapper->setMapping(ui->btnAZActive_1, 1);
+
+    connect(ui->btnAZActive_0, SIGNAL(clicked()), activeAZMapper, SLOT(map()));
+    connect(ui->btnAZActive_1, SIGNAL(clicked()), activeAZMapper, SLOT(map()));
+
+    connect(activeAZMapper, SIGNAL(mapped(int)), SLOT(btnAZActive_clicked(int)));
+
+    /* EL axis */
+    activeELMapper->setMapping(ui->btnELActive_0, 0);
+    activeELMapper->setMapping(ui->btnELActive_1, 1);
+
+    connect(ui->btnELActive_0, SIGNAL(clicked()), activeELMapper, SLOT(map()));
+    connect(ui->btnELActive_1, SIGNAL(clicked()), activeELMapper, SLOT(map()));
+
+    connect(activeELMapper, SIGNAL(mapped(int)), SLOT(btnELActive_clicked(int)));
 }
 
 void MainWindow::initImageProcessor()
@@ -711,17 +741,19 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
     {
         QString message_Status;
         bool *p_Status_Memory;
-        QPushButton *button;
+        QPushButton *button_0, *button_1;
 
         if (request.at(7) == 0x01)
         {
-            button = ui->btnAZActive;
+            button_0 = ui->btnAZActive_0;
+            button_1 = ui->btnAZActive_1;
             message_Status = "AZ";
             p_Status_Memory = &settedActiveValue[0];
         }
         else //if (request.at(7) == 0x02)
         {
-            button = ui->btnELActive;
+            button_0 = ui->btnELActive_0;
+            button_1 = ui->btnELActive_1;
             message_Status = "EL";
             p_Status_Memory = &settedActiveValue[1];
         }
@@ -731,7 +763,8 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
 
         if (status != SP_STATUS_RESPONSE_OK)
         {
-            button->setChecked(*p_Status_Memory);
+            button_0->setChecked(*p_Status_Memory);
+            button_1->setChecked(*p_Status_Memory);
             statusAppendText("- Fail: Set " + message_Status, Qt::red);
         }
         else //if (status == SP_STATUS_ACK_OK)
@@ -743,7 +776,8 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             }
             else
             {
-                button->setChecked(*p_Status_Memory);
+                button_0->setChecked(*p_Status_Memory);
+                button_1->setChecked(*p_Status_Memory);
                 statusAppendText("- Fail: Set " + message_Status, Qt::red);
             }
         }
@@ -766,12 +800,14 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             {
                 if (response.at(8) == 0x01)
                 {
-                    ui->btnAZActive->setChecked(true);
+                    ui->btnAZActive_0->setChecked(true);
+                    ui->btnAZActive_1->setChecked(true);
                     settedActiveValue[0] = true;
                 }
                 else
                 {
-                    ui->btnAZActive->setChecked(false);
+                    ui->btnAZActive_0->setChecked(false);
+                    ui->btnAZActive_1->setChecked(false);
                     settedActiveValue[0] = false;
                 }
             }
@@ -779,19 +815,161 @@ void MainWindow::serial_port_done(ENUM_SP_STATUS_T status, const QByteArray &req
             {
                 if (response.at(8) == 0x01)
                 {
-                    ui->btnELActive->setChecked(true);
+                    ui->btnELActive_0->setChecked(true);
+                    ui->btnELActive_1->setChecked(true);
                     settedActiveValue[1] = true;
                 }
                 else
                 {
-                    ui->btnELActive->setChecked(false);
+                    ui->btnELActive_0->setChecked(false);
+                    ui->btnELActive_1->setChecked(false);
                     settedActiveValue[1] = false;
                 }
             }
             statusAppendText("- Recv: Get Active " + message_Status, Qt::darkGreen);
         }
     }
+    else if (msgID == 0x14) //set control method
+    {
+        QString message_Status;
+        int p_Status_Memory;
 
+        if (request.at(7) != 0x03)
+        {
+
+        }
+        else //if (request.at(7) == 0x03)
+        {
+            p_Status_Memory = settedCtlMethod;
+
+            message_Status.append(ui->cboCtlMethod->itemText(request.at(8)));
+
+            if (status != SP_STATUS_RESPONSE_OK)
+            {
+                ui->cboCtlMethod->setCurrentIndex(p_Status_Memory);
+                statusAppendText("- Fail: Set control mode " + message_Status, Qt::red);
+            }
+            else //if (status == SP_STATUS_ACK_OK)
+            {
+                if (response.at(8) == 0x00)
+                {
+                    p_Status_Memory = request.at(8);
+                    statusAppendText("- Recv: Set control mode " + message_Status + " Done", Qt::darkGreen);
+                }
+                else
+                {
+                    ui->cboCtlMethod->setCurrentIndex(p_Status_Memory);
+                    statusAppendText("- Fail: Set control mode " + message_Status, Qt::red);
+                }
+            }
+        }
+    }
+    else if (msgID == 0x15) //get control method
+    {
+        QString message_Status;
+
+        if (request.at(7) != 0x03)
+        {
+
+        }
+        else //request.at(7) == 0x03
+        {
+            if (status != SP_STATUS_RESPONSE_OK)
+            {
+                statusAppendText("- Fail: Get control method", Qt::red);
+            }
+            else //if (status == SP_STATUS_ACK_OK)
+            {
+                ui->cboCtlMethod->setCurrentIndex(response.at(8));
+                settedCtlMethod = response.at(8);
+                statusAppendText("- Recv: Get Ok - control method " + ui->cboCtlMethod->itemText(response.at(8)), Qt::darkGreen);
+            }
+        }
+    }
+    else if (msgID == 0x16) //set start-up mode
+    {
+        QString message_Status;
+        int p_Status_Memory;
+
+        if (request.at(7) != 0x03)
+        {
+
+        }
+        else //if (request.at(7) == 0x03)
+        {
+            p_Status_Memory = settedStartupMode;
+
+            message_Status.append(ui->cboStartupMode->itemText(request.at(8)));
+
+            if (status != SP_STATUS_RESPONSE_OK)
+            {
+                ui->cboStartupMode->setCurrentIndex(p_Status_Memory);
+                statusAppendText("- Fail: Set start-up mode " + message_Status, Qt::red);
+            }
+            else //if (status == SP_STATUS_ACK_OK)
+            {
+                if (response.at(8) == 0x00)
+                {
+                    p_Status_Memory = request.at(8);
+                    statusAppendText("- Recv: Set start-up mode " + message_Status + " Done", Qt::darkGreen);
+                }
+                else
+                {
+                    ui->cboStartupMode->setCurrentIndex(p_Status_Memory);
+                    statusAppendText("- Fail: Set start-up mode " + message_Status, Qt::red);
+                }
+            }
+        }
+    }
+    else if (msgID == 0x17) //get start-up mode
+    {
+        QString message_Status;
+
+        if (request.at(7) != 0x03)
+        {
+
+        }
+        else //request.at(7) == 0x03
+        {
+            if (status != SP_STATUS_RESPONSE_OK)
+            {
+                statusAppendText("- Fail: Get start-up mode", Qt::red);
+            }
+            else //if (status == SP_STATUS_ACK_OK)
+            {
+                ui->cboStartupMode->setCurrentIndex(response.at(8));
+                settedStartupMode = response.at(8);
+                statusAppendText("- Recv: Get Ok - start-up mode " + ui->cboStartupMode->itemText(response.at(8)), Qt::darkGreen);
+            }
+        }
+    }
+    else if (msgID == 0x18) //save all parameters
+    {
+        QString message_Status;
+
+        if (request.at(7) != 0x03)
+        {
+
+        }
+        else //if (request.at(7) == 0x03)
+        {
+            if (status != SP_STATUS_RESPONSE_OK)
+            {
+                statusAppendText("- Fail: Save all parameters", Qt::red);
+            }
+            else //if (status == SP_STATUS_ACK_OK)
+            {
+                if (response.at(8) == 0x00)
+                {
+                    statusAppendText("- Recv: Save all parameters Done", Qt::darkGreen);
+                }
+                else
+                {
+                    statusAppendText("- Fail: Save all parameters", Qt::red);
+                }
+            }
+        }
+    }
 }
 
 /* Load All Params */
@@ -806,7 +984,7 @@ void MainWindow::timer_Get_All_Params_timeout()
 {
     serialPort.sendCmdNonBlocking(struGB_CMD[cmdCounter].cmd_msgID, struGB_CMD[cmdCounter].cmd_payload);
     cmdCounter++;
-    if (cmdCounter >= 11)
+    if (cmdCounter >= 13)
         cmdCounter = 0;
     else
         timerGetAllParams.start();
@@ -1262,10 +1440,15 @@ void MainWindow::on_btnELGetPos_clicked()
 }
 
 /* Active Axis */
-void MainWindow::on_btnAZActive_clicked(bool checked)
+void MainWindow::btnAZActive_clicked(int btnID)
 {
     QByteArray request_Data;
     QString message_Status;
+    bool checked;
+    QPushButton *btnAZActive;
+
+    btnAZActive =  ui->centralWidget->findChild<QPushButton *>(QString("btnAZActive_%1").arg(btnID));
+    checked = btnAZActive->isChecked();
 
     request_Data.clear();
     request_Data.append((char)0x01); //Axis AZ
@@ -1286,10 +1469,15 @@ void MainWindow::on_btnAZActive_clicked(bool checked)
     serialPort.sendCmdNonBlocking(0x10, request_Data);
 }
 
-void MainWindow::on_btnELActive_clicked(bool checked)
+void MainWindow::btnELActive_clicked(int btnID)
 {
     QByteArray request_Data;
     QString message_Status;
+    bool checked;
+    QPushButton *btnELActive;
+
+    btnELActive =  ui->centralWidget->findChild<QPushButton *>(QString("btnAZActive_%1").arg(btnID));
+    checked = btnELActive->isChecked();
 
     request_Data.clear();
     request_Data.append((char)0x02); //Axis EL
@@ -1310,6 +1498,70 @@ void MainWindow::on_btnELActive_clicked(bool checked)
     serialPort.sendCmdNonBlocking(0x10, request_Data);
 }
 
+/* Control Method */
+void MainWindow::on_btnSetCtlMethod_clicked()
+{
+    QByteArray request_Data;
+    QString message_Status;
+
+    request_Data.clear();
+    request_Data.append((char)0x03); //Axis Both
+
+    message_Status = "- Send: Set control mode " + ui->cboCtlMethod->currentText();
+    request_Data.append((char)ui->cboCtlMethod->currentIndex());
+
+    statusAppendText(message_Status);
+    serialPort.sendCmdNonBlocking(0x14, request_Data);
+}
+
+void MainWindow::on_btnGetCtlMethod_clicked()
+{
+    QByteArray request_Data;
+
+    request_Data.clear();
+    request_Data.append((char)0x03); //Axis Both
+    statusAppendText("- Send: Get control mode");
+    serialPort.sendCmdNonBlocking(0x15, request_Data);
+}
+
+/* Start-up mode */
+void MainWindow::on_btnSetStartupMode_clicked()
+{
+    QByteArray request_Data;
+    QString message_Status;
+
+    request_Data.clear();
+    request_Data.append((char)0x03); //Axis Both
+
+    message_Status = "- Send: Set start-up mode " + ui->cboStartupMode->currentText();
+    request_Data.append((char)ui->cboStartupMode->currentIndex());
+
+    statusAppendText(message_Status);
+    serialPort.sendCmdNonBlocking(0x16, request_Data);
+}
+
+void MainWindow::on_btnGetStartupMode_clicked()
+{
+    QByteArray request_Data;
+
+    request_Data.clear();
+    request_Data.append((char)0x03); //Axis Both
+    statusAppendText("- Send: Get start-up mode");
+    serialPort.sendCmdNonBlocking(0x17, request_Data);
+}
+
+/* Save all parameters */
+void MainWindow::on_btnSaveAllParams_clicked()
+{
+    QByteArray request_Data;
+
+    request_Data.clear();
+    request_Data.append((char)0x03); //Axis Both
+    statusAppendText("- Send: Save all parameters");
+    serialPort.sendCmdNonBlocking(0x18, request_Data);
+}
+
+/* Camera */
 void MainWindow::on_btnCameraCapture_clicked()
 {
     QString stylesheet_Widget;
@@ -1322,7 +1574,7 @@ void MainWindow::on_btnCameraCapture_clicked()
                                     QPushButton { font: bold %1px; color: white; background-color: #774122; border: none; border-radius: 5px; min-height: %2px;} \
                                     QPushButton:pressed { background-color: #63361c; } \
                                     QPushButton:hover:!pressed { background-color: #8b4c27; } \
-                                    ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                    ").arg(int(18 * heightFactor)).arg(int(90 * heightFactor));
                                     ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
     }
     else
@@ -1333,7 +1585,7 @@ void MainWindow::on_btnCameraCapture_clicked()
                                     QPushButton { font: bold %1px; color: white; background-color: #224d77; border: none; border-radius: 5px; min-height: %2px;} \
                                     QPushButton:pressed { background-color: #1c4063; } \
                                     QPushButton:hover:!pressed { background-color: #27598b; } \
-                                    ").arg(int(18 * heightFactor)).arg(int(40 * heightFactor));
+                                    ").arg(int(18 * heightFactor)).arg(int(90 * heightFactor));
                                     ui->btnCameraCapture->setStyleSheet(stylesheet_Widget);
     }
 }

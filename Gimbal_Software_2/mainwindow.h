@@ -68,8 +68,19 @@ private slots:
     void on_btnELGetPos_clicked();
 
     /* Active Axis button */
-    void on_btnAZActive_clicked(bool checked);
-    void on_btnELActive_clicked(bool checked);
+    void btnAZActive_clicked(int btnID);
+    void btnELActive_clicked(int btnID);
+
+    /* Control Method button */
+    void on_btnSetCtlMethod_clicked();
+    void on_btnGetCtlMethod_clicked();
+
+    /* Start-up Mode button */
+    void on_btnSetStartupMode_clicked();
+    void on_btnGetStartupMode_clicked();
+
+    /* Control Method button */
+    void on_btnSaveAllParams_clicked();
 
     /* Menu PlainTextEdit */
     void show_ptxtStatus_Menu(QPoint pt);
@@ -101,13 +112,15 @@ private:
     QMutex mutexPIDWR;
 
     bool settedActiveValue[2] = {false, false};
+    int settedCtlMethod = 0;
+    int settedStartupMode = 0;
 
     QTimer timerGetAllParams;
     int cmdCounter;
 
     QMap<QString, QString> pidTrackingParams;
 
-    STRU_CMD_T struGB_CMD[11] =
+    STRU_CMD_T struGB_CMD[13] =
     {
         { "GET_MODE",         0x05, QByteArray::fromRawData("\x03", 1) },
         { "GET_AZ_MANUAL",    0x0F, QByteArray::fromRawData("\x01\x01", 2) },
@@ -119,7 +132,9 @@ private:
         { "GET_EL_VELOCITY",  0x0F, QByteArray::fromRawData("\x02\x04", 2) },
         { "GET_EL_CURRENT",   0x0F, QByteArray::fromRawData("\x02\x05", 2) },
         { "GET_ACTIVE_AZ",    0x11, QByteArray::fromRawData("\x01", 1) },
-        { "GET_ACTIVE_AZ",    0x11, QByteArray::fromRawData("\x02", 1) },
+        { "GET_ACTIVE_EL",    0x11, QByteArray::fromRawData("\x02", 1) },
+        { "GET_CTL_METHOD",   0x15, QByteArray::fromRawData("\x03", 1) },
+        { "GET_STARTUP_MODE", 0x17, QByteArray::fromRawData("\x03", 1) },
     };
 
     QFile *dataTrackingFile;
@@ -131,6 +146,7 @@ private:
     void initModeButtonMapping();
     void initPIDLineEditMapping();
     void initPIDWRButtonMapping();
+    void initActiveAxisButtonMapping();
 
     bool getAllParams();
 
