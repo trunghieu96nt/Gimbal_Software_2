@@ -14,6 +14,7 @@
 #include <QQueue>
 #include <QMutex>
 #include <QMenu>
+#include <QFile>
 
 #include "serialport.h"
 
@@ -74,27 +75,39 @@ private slots:
     void show_ptxtStatus_Menu(QPoint pt);
     void ptxtStatus_Clear();
 
+    void on_btnCameraCapture_clicked();
+
+    /* send vel cmd to gimbal */
+    void sendVelCmd(float az_vel, float el_vel, float x, float y);
+
+    /* init image processor object */
+    void initImageProcessor();
+
+    void initFile();
+
 private:
     Ui::MainWindow *ui;
 
-    SerialPort serial_Port;
+    SerialPort serialPort;
     QTimer *timerSerialPort;
-    QStringList list_Serial_Port;
+    QStringList listSerialPort;
 
-    double width_Factor, height_Factor;
+    double widthFactor, heightFactor;
 
-    QSignalMapper *mode_Mapper = new QSignalMapper(this);
-    QString setted_Mode;
+    QSignalMapper *modeMapper = new QSignalMapper(this);
+    QString settedMode;
 
-    QString setted_PID_Value[2][5][5];
-    QMutex mutex_PID_WR;
+    QString settedPIDValue[2][5][5];
+    QMutex mutexPIDWR;
 
-    bool setted_Active_Value[2] = {false, false};
+    bool settedActiveValue[2] = {false, false};
 
-    QTimer timer_Get_All_Params;
-    int cmd_Counter;
+    QTimer timerGetAllParams;
+    int cmdCounter;
 
-    STRU_CMD_T stru_GB_CMD[11] =
+    QMap<QString, QString> pidTrackingParams;
+
+    STRU_CMD_T struGB_CMD[11] =
     {
         { "GET_MODE",         0x05, QByteArray::fromRawData("\x03", 1) },
         { "GET_AZ_MANUAL",    0x0F, QByteArray::fromRawData("\x01\x01", 2) },
@@ -109,16 +122,23 @@ private:
         { "GET_ACTIVE_AZ",    0x11, QByteArray::fromRawData("\x02", 1) },
     };
 
-    void init_GUI();
-    void init_Page();
-    void init_Serial_Port();
-    void init_Mode_Button_Mapping();
-    void init_PID_LineEdit_Mapping();
-    void init_PID_WR_Button_Mapping();
+    QFile *dataTrackingFile;
+    QTextStream *dataTrackingStream;
 
-    bool get_All_Params();
-    void status_Append_Text(const QString &text);
-    void status_Append_Text(const QString &text, QColor color);
+    void initGUI();
+    void initPage();
+    void initSerialPort();
+    void initModeButtonMapping();
+    void initPIDLineEditMapping();
+    void initPIDWRButtonMapping();
+
+    bool getAllParams();
+
+    void statusAppendText(const QString &text);
+    void statusAppendText(const QString &text, QColor color);
+
+    void openFile();
+    void closeFile();
 };
 
 #endif // MAINWINDOW_H
