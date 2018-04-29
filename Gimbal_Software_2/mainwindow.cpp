@@ -1447,9 +1447,15 @@ void MainWindow::btnAZActive_clicked(int btnID)
     bool checked;
     QPushButton *btnAZActive;
 
+    /* Get current status of clicked button */
     btnAZActive =  ui->centralWidget->findChild<QPushButton *>(QString("btnAZActive_%1").arg(btnID));
     checked = btnAZActive->isChecked();
 
+    /* Set status for other button */
+    btnAZActive =  ui->centralWidget->findChild<QPushButton *>(QString("btnAZActive_%1").arg(1-btnID));
+    btnAZActive->setChecked(checked);
+
+    /* Send data */
     request_Data.clear();
     request_Data.append((char)0x01); //Axis AZ
 
@@ -1476,9 +1482,15 @@ void MainWindow::btnELActive_clicked(int btnID)
     bool checked;
     QPushButton *btnELActive;
 
-    btnELActive =  ui->centralWidget->findChild<QPushButton *>(QString("btnAZActive_%1").arg(btnID));
+    /* Get current status of clicked button */
+    btnELActive =  ui->centralWidget->findChild<QPushButton *>(QString("btnELActive_%1").arg(btnID));
     checked = btnELActive->isChecked();
 
+    /* Set status for other button */
+    btnELActive =  ui->centralWidget->findChild<QPushButton *>(QString("btnELActive_%1").arg(1-btnID));
+    btnELActive->setChecked(checked);
+
+    /* Send data */
     request_Data.clear();
     request_Data.append((char)0x02); //Axis EL
 
